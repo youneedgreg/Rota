@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# build output
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# env files: only .env.example is committed
+.env*
+!.env.example
+
+# local-only notes, scripts and media (never committed)
+*.local.md
+scripts.local/
+media.local/
+
+# OS and editors
+.DS_Store
+*.pem
+.vercel
+
+# debug
+npm-debug.log*
+.pnpm-debug.log*
