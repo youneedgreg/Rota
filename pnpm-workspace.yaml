@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Native builds pnpm may skip: sharp ships prebuilt binaries; unrs-resolver is lint-only.
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
