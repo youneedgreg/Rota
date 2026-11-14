@@ -3,6 +3,16 @@ A tontine (or chama) where nobody holds the pot. Each round, every member pays t
 
 > Under construction for the Dakar Bitcoin Hack.
 
+## Run it
+
+Requires Docker with Compose.
+
+```bash
+docker compose up --build
+```
+
+This starts the web app on http://localhost:3000 and a local Nostr relay (strfry) on ws://localhost:7777. Both listen on this machine only. Stop with `docker compose down`; relay data is kept in a Docker volume (`docker compose down -v` removes it).
+
 ## Development
 
 Requires Node 24 and pnpm 10.
