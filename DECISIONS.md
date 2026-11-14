@@ -2,6 +2,24 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-14 · Circles, amounts and paying an address
+
+The circle model, price conversion and invoice checks live in `packages/circles` (`@rota/circles`), pure TypeScript that the web app, a seed script or a server can share. `@rota/receipts` stays small, because it's meant to be published on its own.
+
+**The recipient doesn't pay into their own round.** Members pay the recipient directly, so paying yourself would only cost fees. A round's pot is (members − 1) × contribution, and a circle of n members has n rounds in payout order.
+
+**Weekly, monthly or demo rounds, with a grace period.** A payment is late once the round's grace period has passed (days for weekly and monthly, minutes for demo rounds, which the video and the judge path use). Monthly rounds count from the start date each time, so a circle that starts on the 31st opens on the last day of shorter months and goes back to the 31st after. A payment counts only if its receipt passed the four checks; the status code decides paid, pending or late, not whether a payment happened.
+
+**Sats are worked out on the payer's phone, at pay time.** Rota's server never sets the amount. For most addresses the phone uses the market price (CoinGecko, Coinbase if CoinGecko fails or is more than 10 minutes old, cached for 60 seconds) and XOF = EUR × 655.957. Amounts are rounded up to a whole sat, so the recipient never gets less. Members' sats for the same round can differ slightly; each receipt records the exact amount paid.
+
+**M-Pesa recipients get the exact shillings.** When an address quotes KES itself (bitcoin.co.ke's `currency.multiplier`), the phone uses that rate, after checking that the bitcoin price it implies is within 5% of the market price. 5% is Rota's own margin, enough for a service's spread and short enough to refuse a broken or hostile rate. M-Pesa payouts are KES-only: an XOF circle would need a second conversion before every payment.
+
+**M-Pesa numbers are stored as 2547XXXXXXXX@bitcoin.co.ke.** Asked about a 07… number, bitcoin.co.ke's metadata names the 2547… form, and receipt check 2 compares the two. Rota rewrites 07…, 01…, 254… and +254… numbers to that form when the circle is created and refuses anything that isn't a Kenyan mobile number.
+
+**Its minimum is a little above its own rate.** On 2026-11-14 bitcoin.co.ke accepted 15 KES but asked for at least 178 sats, while 15 KES at its own rate was 176 sats. For an amount within the service's own range, Rota sends the service's minimum when its rate falls short; the recipient gets a little more.
+
+**The invoice is checked before any wallet sees it.** The phone fetches the address's pay parameters (their metadata must name exactly that address), asks for an invoice for the computed amount, and refuses it unless it is on mainnet, for exactly that amount, tied to the address (description hash, or for bitcoin.co.ke the signed description), signed by the node recorded at setup, and valid for at least 15 more seconds. Redirects are refused, so the phone only talks to the address's own domain (neither bitcoin.co.ke nor getalby.com redirected on 2026-11-14). When a circle is set up, each payout address is probed once with an unpaid invoice to record its node key. Not yet seen: whether bitcoin.co.ke always signs with the same node; the circle keeps a list of keys in case it doesn't.
+
 ## 2026-11-14 · Local setup with Docker Compose
 
 **One command: `docker compose up --build`** starts the web app and a strfry relay. Both ports are published on 127.0.0.1 only.
