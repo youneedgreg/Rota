@@ -1,0 +1,34 @@
+# Rota, locally: the web app and its Nostr relay.
+#   docker compose up --build
+# App: http://localhost:3000 · Relay: ws://localhost:7777
+# Both ports are bound to this machine only.
+
+services:
+  relay:
+    # strfry from its author's registry, pinned to the multi-arch index digest
+    # (version 1.1.2-148, built 2026-09-04). Bump deliberately, never via :latest.
+    image: ghcr.io/hoytech/strfry@sha256:36f1886d185a88ca57c66ebe52e6e9e8428dac2486eea0a5d50ff934f18b60c3
+    # The image's default config listens on 127.0.0.1 inside the container,
+    # which the host can't reach; listen on all container interfaces instead.
+    command: ["--set", "relay.bind=0.0.0.0", "relay"]
+    ports:
+      - "127.0.0.1:7777:7777"
+    volumes:
+      - relay-data:/app/strfry-db
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # The browser connects to the relay from the host, so this is the host's address.
+        NEXT_PUBLIC_RELAY_URL: ${NEXT_PUBLIC_RELAY_URL:-ws://localhost:7777}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - relay
+    restart: unless-stopped
+
+volumes:
+  relay-data:
