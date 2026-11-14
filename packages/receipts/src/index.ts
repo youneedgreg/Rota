@@ -16,3 +16,5 @@
 export const RECEIPT_CHECKS = ["paid", "address", "issuer", "amount"] as const;
 
 export type ReceiptCheck = (typeof RECEIPT_CHECKS)[number];
+
+export { decodeInvoice, InvoiceError, type Invoice } from "./bolt11";
