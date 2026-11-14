@@ -46,6 +46,17 @@ describe("normalizeAddress", () => {
   it("lower-cases and trims", () => {
     expect(normalizeAddress("  Awa@Example.COM ")).toBe("awa@example.com");
   });
+  it.each([
+    ["0700000001@bitcoin.co.ke", "254700000001@bitcoin.co.ke"],
+    ["+254700000001@bitcoin.co.ke", "254700000001@bitcoin.co.ke"],
+    ["254110000001@Bitcoin.co.ke", "254110000001@bitcoin.co.ke"],
+  ])("writes the M-Pesa number %s the way the service names it", (input, expected) => {
+    expect(normalizeAddress(input)).toBe(expected);
+  });
+  it.each(["070000001@bitcoin.co.ke", "0800000001@bitcoin.co.ke", "awa@bitcoin.co.ke"])(
+    "rejects the M-Pesa address %s",
+    (value) => expect(normalizeAddress(value)).toBeNull(),
+  );
   it.each(["awa", "@example.com", "awa@", "a b@example.com", "awa@example", "a@b@example.com", "awa@-x.com"])(
     "rejects %s",
     (value) => expect(normalizeAddress(value)).toBeNull(),

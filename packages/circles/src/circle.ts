@@ -92,13 +92,26 @@ const USERNAME = /^[a-z0-9\-_.+]+$/;
 // A DNS name with at least one dot; labels of letters, digits and hyphens.
 const DOMAIN = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 
-/** Lower-cases and checks a Lightning address. Returns null if it isn't one. */
+// Kenyan mobile numbers: 07XXXXXXXX or 01XXXXXXXX, optionally written as 254… or +254….
+const KENYAN_MOBILE = /^(?:\+?254|0)([17]\d{8})$/;
+
+/**
+ * Lower-cases and checks a Lightning address. Returns null if it isn't one.
+ * M-Pesa numbers are rewritten to 2547XXXXXXXX@bitcoin.co.ke, the form the
+ * service's own metadata names (seen 2026-11-14: asked for 07…, it answered
+ * 2547…), so receipt check 2 compares like with like.
+ */
 export function normalizeAddress(address: string): string | null {
   const trimmed = address.trim().toLowerCase();
   const at = trimmed.lastIndexOf("@");
   if (at <= 0 || at !== trimmed.indexOf("@")) return null;
-  const user = trimmed.slice(0, at);
+  let user = trimmed.slice(0, at);
   const domain = trimmed.slice(at + 1);
+  if (domain === MPESA_DOMAIN) {
+    const mobile = KENYAN_MOBILE.exec(user);
+    if (!mobile) return null;
+    user = `254${mobile[1]}`;
+  }
   if (user.length > 64 || !USERNAME.test(user) || !DOMAIN.test(domain)) return null;
   return `${user}@${domain}`;
 }
