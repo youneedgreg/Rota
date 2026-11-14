@@ -43,3 +43,22 @@ export {
   type PriceSourceOptions,
   type Quote,
 } from "./prices";
+export {
+  LnurlError,
+  MIN_SECONDS_LEFT,
+  amountFor,
+  checkInvoiceResponse,
+  fetchInvoice,
+  fetchPayParams,
+  invoiceRequestUrl,
+  parsePayParams,
+  payParamsUrl,
+  probeAddress,
+  type AddressProbe,
+  type CheckedInvoice,
+  type InvoiceCheckOptions,
+  type LnurlClientOptions,
+  type LnurlProblem,
+  type PayParams,
+  type ServiceCurrency,
+} from "./lnurl";
