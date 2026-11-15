@@ -24,6 +24,10 @@ services:
       args:
         # The browser connects to the relay from the host, so this is the host's address.
         NEXT_PUBLIC_RELAY_URL: ${NEXT_PUBLIC_RELAY_URL:-ws://localhost:7777}
+        # Regtest by default, so the wallet opens without a Breez key (no Lightning
+        # there). For mainnet, set both in a root .env file (see .env.example).
+        NEXT_PUBLIC_BREEZ_NETWORK: ${NEXT_PUBLIC_BREEZ_NETWORK:-regtest}
+        NEXT_PUBLIC_BREEZ_API_KEY: ${NEXT_PUBLIC_BREEZ_API_KEY:-}
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
