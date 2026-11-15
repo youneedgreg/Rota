@@ -20,3 +20,15 @@ export {
   type PreparedQuote,
   type SentPayment,
 } from "./guard";
+export {
+  CAP_MARGIN,
+  NWC_METHODS,
+  NwcPolicyError,
+  capSats,
+  checkConnection,
+  checkNwcPayment,
+  connectionRequest,
+  type ConnectionReport,
+  type NwcMethod,
+  type NwcProblem,
+} from "./nwc";
