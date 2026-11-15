@@ -2,6 +2,8 @@ import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage
 import { finalizeEvent } from "nostr-tools/pure";
 import { describe, expect, it } from "vitest";
 import {
+  AMOUNT_TOLERANCE,
+  amountOutsideBand,
   createReceiptEvent,
   newCircleSecret,
   newMemberSecret,
@@ -10,6 +12,7 @@ import {
   ReceiptRefused,
   roundClaims,
   verifyReceiptEvent,
+  type AmountBand,
   type CircleContext,
   type PaymentRecord,
 } from "./records";
@@ -31,7 +34,7 @@ function context(overrides: Partial<CircleContext> = {}): CircleContext {
     members: [publicKeyOf(alice), publicKeyOf(bob)],
     round: 3,
     recipient: { address: ADDRESS, knownNodeKeys: [nodeKeyOf(recipientNode)] },
-    expectedAmountMsat: AMOUNT,
+    amount: AMOUNT,
     ...overrides,
   };
 }
@@ -51,7 +54,12 @@ function payment(label = "round 3 alice", overrides: Partial<PaymentRecord> = {}
 }
 
 function receipt(memberSecret = alice, pay = payment(), ctx = context()) {
-  return createReceiptEvent({ memberSecret, context: ctx, payment: pay, createdAt: 1_763_200_005 });
+  return createReceiptEvent({
+    memberSecret,
+    context: { ...ctx, expectedAmountMsat: ctx.amount as bigint },
+    payment: pay,
+    createdAt: 1_763_200_005,
+  });
 }
 
 /** A JSON round trip, as the event would arrive from a relay. */
@@ -149,7 +157,7 @@ describe("verifyReceiptEvent", () => {
 
   it("takes the amount from the circle, not from the event", () => {
     // The receipt is honest about a 178 sat payment, but this round expects 200 sats.
-    const result = verifyReceiptEvent(fromRelay(receipt()), context({ expectedAmountMsat: 200_000n }));
+    const result = verifyReceiptEvent(fromRelay(receipt()), context({ amount: 200_000n }));
     expect(result.ok).toBe(false);
     expect(result.checks.filter((c) => !c.ok).map((c) => c.check)).toEqual(["amount"]);
   });
@@ -220,5 +228,73 @@ describe("roundClaims", () => {
   it("ignores receipts that failed verification", () => {
     const results = [verifyReceiptEvent(fromRelay(receipt(outsider)), context())];
     expect(roundClaims(results).size).toBe(0);
+  });
+});
+
+describe("amount band", () => {
+  // 15 KES cost 176,000 msat at "today's" price; the receipt paid 178,000.
+  const band = (overrides: Partial<AmountBand> = {}): AmountBand => ({
+    currency: "KES",
+    contribution: 15,
+    marketMsat: 176_000n,
+    tolerance: AMOUNT_TOLERANCE,
+    ...overrides,
+  });
+
+  it("passes a receipt whose sats are within ±20% of today's price", () => {
+    const result = verifyReceiptEvent(fromRelay(receipt()), context({ amount: band() }));
+    expect(result.ok).toBe(true);
+    expect(result.checks.find((c) => c.check === "amount")?.detail).toMatch(/band/);
+  });
+
+  it("fails a receipt that paid far fewer sats than the contribution costs", () => {
+    // At this price 15 KES would be 250,000 msat; 178,000 is 29% short.
+    const result = verifyReceiptEvent(fromRelay(receipt()), context({ amount: band({ marketMsat: 250_000n }) }));
+    expect(result.ok).toBe(false);
+    expect(result.checks.filter((c) => !c.ok).map((c) => [c.check, c.detail])).toEqual([
+      ["amount", "paid too few sats for the contribution at today's price"],
+    ]);
+  });
+
+  it("fails a receipt that doesn't claim the circle's contribution", () => {
+    const result = verifyReceiptEvent(fromRelay(receipt()), context({ amount: band({ contribution: 20 }) }));
+    expect(result.checks.find((c) => c.check === "amount")?.detail).toMatch(/contribution/);
+  });
+
+  it("still needs the invoice to match the sats the receipt records", () => {
+    // Alice says she paid 200 sats, but her invoice was for 178.
+    const pay = payment("round 3 alice");
+    const circle = publicKeyOf(circleSecret);
+    const lie = { v: 1, circle, round: 3, ...pay, amountMsat: "200000" };
+    return import("nostr-tools/nip44").then(({ encrypt, getConversationKey }) => {
+      const event = finalizeEvent(
+        {
+          kind: RECEIPT_KIND,
+          created_at: 1_763_200_005,
+          tags: [
+            ["p", circle],
+            ["round", "3"],
+          ],
+          content: encrypt(JSON.stringify(lie), getConversationKey(alice, circle)),
+        },
+        alice,
+      );
+      const result = verifyReceiptEvent(fromRelay(event), context({ amount: band({ marketMsat: 200_000n }) }));
+      expect(result.checks.filter((c) => !c.ok).map((c) => c.check)).toEqual(["amount"]);
+    });
+  });
+
+  it("fails every amount when there's no price to compare with", () => {
+    expect(amountOutsideBand({ amountMsat: 178_000n, local: { currency: "KES", amount: 15 } }, band({ marketMsat: 0n }))).toMatch(
+      /no price/,
+    );
+  });
+
+  it("puts the edges of the band inside it", () => {
+    const local = { currency: "KES", amount: 15 };
+    expect(amountOutsideBand({ amountMsat: 80_000n, local }, band({ marketMsat: 100_000n }))).toBeNull();
+    expect(amountOutsideBand({ amountMsat: 120_000n, local }, band({ marketMsat: 100_000n }))).toBeNull();
+    expect(amountOutsideBand({ amountMsat: 79_999n, local }, band({ marketMsat: 100_000n }))).toMatch(/too few/);
+    expect(amountOutsideBand({ amountMsat: 120_001n, local }, band({ marketMsat: 100_000n }))).toMatch(/far more/);
   });
 });

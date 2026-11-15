@@ -22,12 +22,12 @@ describe.skipIf(!RELAY)("receipts on a real relay", () => {
       members: [publicKeyOf(member)],
       round: 1,
       recipient: { address, knownNodeKeys: [nodeKeyOf(node)] },
-      expectedAmountMsat: 178_000n,
+      amount: 178_000n,
     };
 
     const event = createReceiptEvent({
       memberSecret: member,
-      context: ctx,
+      context: { ...ctx, expectedAmountMsat: 178_000n },
       payment: {
         address,
         metadata,
