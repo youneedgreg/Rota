@@ -2,6 +2,18 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-15 · Rounds, paying and Verify
+
+**The round screen is worked out on each member's phone.** Once every seat is taken, `/circle` shows the round open now (and earlier rounds), its recipient, and each payer as paid, pending, late or disputed. It reads the round's receipts from the relay and checks every one on the phone. A member counts as paid only with a receipt that passes all checks and a payment no other member also claims. The code is `roundView` in `@rota/records`.
+
+**Amounts are judged against a band around today's price, ±20%.** Sats are worked out on each payer's phone when they pay, so the exact figure differs between members and between days, and no member can know in advance what another should have paid. A receipt passes the amount check when it does three things. It claims exactly the circle's contribution in local money. Its invoice is for exactly the sats it records. Those sats are within ±20% of what the contribution costs at the checking phone's current price. A large underpayment fails. A small one inside the band doesn't, which is a known gap. In a monthly circle, an old receipt can fall outside the band after a large price move; the band would then need the price at the round's date, which Rota doesn't fetch yet. With no price available, every amount check fails, so nothing counts as paid by mistake.
+
+**Paying runs entirely on the payer's phone.** The steps are: fetch the recipient's pay parameters, work out the sats (Tando's own rate for M-Pesa, today's price otherwise), refuse if that amount falls outside the band other members will apply, fetch the invoice and check it, then pay it with the built-in wallet or the NWC connection, unlocked with the PIN for this payment only. After that, the phone signs the receipt and publishes it. The receipt is saved on the phone before publishing, and the phone keeps retrying until the relay accepts it, so a paid round is never lost to a dropped connection. Paying waits until the organizer's roster fixes the seats.
+
+**Verify shows each check on each receipt.** The four receipt checks and the member signature, each with its reason, all worked out on the phone from the circle's own record. A receipt for an M-Pesa recipient says its address proof is the weaker one, because bitcoin.co.ke signs a plain description, not a hash.
+
+**Not built:** the recipient's signed "received" record that would settle a disputed payment.
+
 ## 2026-11-15 · Circles on the relay, no backend
 
 **A circle lives on its relay, not on a Rota server.** There are three event kinds, all regular and all encrypted for the circle with NIP-44:
@@ -29,7 +41,7 @@ Rota needs no database, `docker compose up` stays app + relay, and no Rota serve
 
 **The phone refuses to publish a receipt that fails the four checks.** The checks run right after paying, before signing.
 
-**When checking a receipt, the recipient, their nodes and the amount come from the circle's own record, not from the event.** So a member can't vouch for their own receipt. The member's signature must verify and the key must be on the circle's member list. That is the "by this member" half of check 4. Events are rebuilt from their signed fields before checking, because nostr-tools caches a "verified" flag on the event object that would otherwise survive a later change.
+**When checking a receipt, the recipient, their nodes and the contribution come from the circle's own record, not from the event.** (How the sats are judged: see "Rounds, paying and Verify".) So a member can't vouch for their own receipt. The member's signature must verify and the key must be on the circle's member list. That is the "by this member" half of check 4. Events are rebuilt from their signed fields before checking, because nostr-tools caches a "verified" flag on the event object that would otherwise survive a later change.
 
 **One payment counts once.** Every member can decrypt every receipt, so a member could copy someone else's invoice and preimage into a receipt of their own, and it would pass all four checks. When two members claim the same payment hash, both are shown as disputed until the recipient's signed "received" record settles it (not built yet). Binding the payer into the invoice itself, for example with an LNURL comment, would stop this at the source; whether bitcoin.co.ke accepts comments is not checked.
 
@@ -39,7 +51,7 @@ Rota needs no database, `docker compose up` stays app + relay, and no Rota serve
 
 **Built-in wallet: Breez SDK (Spark) 0.28.4, in the browser.** The SDK runs as WebAssembly on the member's phone and keeps its state in the browser's IndexedDB, so the keys never leave the device. It loads from the SDK's browser entry and only on the client (`init()` before anything else). Its Node storage (better-sqlite3) is skipped at install because the browser never uses it.
 
-**The Breez API key ships to the browser.** The SDK needs it on mainnet (not on regtest) and runs in the browser, so the key is a `NEXT_PUBLIC_` variable and anyone can read it from the page. It identifies the app to Breez; it can't move anyone's money. The hosted demo uses its own key, separate from the development one.
+**The Breez API key ships to the browser.** The SDK needs it on mainnet (not on regtest) and runs in the browser, so the key is a `NEXT_PUBLIC_` variable and anyone can read it from the page. It identifies the app to Breez; it can't move anyone's money. Breez's key is a certificate that embeds the email address it was requested with, so that address is public too. One key serves both development and the hosted demo (decided 2026-11-15). Anyone running their own copy should request their own key.
 
 **Recovery words and wallet connections are encrypted with a PIN on the device.** PBKDF2-HMAC-SHA256 at 600,000 iterations (OWASP's 2023 figure; stored in each blob so it can change), then AES-256-GCM with a fresh salt and nonce each time. A wrong PIN and a changed blob both fail the same way. Minimum 6 characters. Limit, in the threat model: someone who copies the blob can guess PINs offline, so a longer passphrase is stronger.
 

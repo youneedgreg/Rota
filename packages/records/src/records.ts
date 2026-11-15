@@ -67,10 +67,51 @@ export interface CircleContext {
   round: number;
   /** The round's recipient, as recorded when the circle was set up. */
   recipient: { address: string; knownNodeKeys: readonly string[] };
-  /** The round's amount, in millisatoshis. */
-  expectedAmountMsat: bigint;
+  /**
+   * The amount to compare against: the exact millisatoshis (the payer, right
+   * after paying), or a band around today's price (any member, later).
+   */
+  amount: bigint | AmountBand;
   /** BOLT11 network prefix; "bc" (mainnet) unless set. */
   network?: string;
+}
+
+/**
+ * How a member's device judges a receipt's amount when it didn't make the
+ * payment. Sats are worked out on each payer's phone at pay time, so members'
+ * sats for one round differ a little. The receipt must say it paid exactly the
+ * circle's contribution in local money, its invoice must be for exactly the
+ * sats it records, and those sats must be within `tolerance` of what the
+ * contribution costs at today's price. A large underpayment fails; a small one
+ * within the band doesn't. A monthly circle's old receipt can fall outside
+ * the band after a big price move (see DECISIONS.md).
+ */
+export interface AmountBand {
+  currency: string;
+  /** The circle's contribution, in whole units of `currency`. */
+  contribution: number;
+  /** What the contribution costs at today's price, in millisatoshis. */
+  marketMsat: bigint;
+  /** Allowed difference from `marketMsat`, as a fraction; 0.2 = ±20%. */
+  tolerance: number;
+}
+
+/** Rota's band: ±20% of today's price (Gregory, 15 Nov 2026). */
+export const AMOUNT_TOLERANCE = 0.2;
+
+/** Why a receipt's recorded amount falls outside the band, or null if it fits. */
+export function amountOutsideBand(content: Pick<ReceiptContent, "amountMsat" | "local">, band: AmountBand): string | null {
+  if (!content.local || content.local.currency !== band.currency || content.local.amount !== band.contribution) {
+    return "receipt doesn't claim the circle's contribution";
+  }
+  if (band.marketMsat <= 0n || !(band.tolerance >= 0 && band.tolerance < 1)) return "no price to compare the amount with";
+  // Fractions in parts per million, so the comparison stays in whole msat.
+  const ppm = BigInt(Math.round(band.tolerance * 1_000_000));
+  const low = (band.marketMsat * (1_000_000n - ppm)) / 1_000_000n;
+  const high = (band.marketMsat * (1_000_000n + ppm) + 999_999n) / 1_000_000n;
+  if (content.amountMsat < low) return "paid too few sats for the contribution at today's price";
+  if (content.amountMsat > high) return "paid far more sats than the contribution at today's price";
+  return null;
 }
 
 export class ReceiptRefused extends Error {
@@ -93,7 +134,7 @@ function assertRound(round: number): void {
  */
 export function createReceiptEvent(options: {
   memberSecret: Uint8Array;
-  context: Omit<CircleContext, "members">;
+  context: Omit<CircleContext, "members" | "amount"> & { expectedAmountMsat: bigint };
   payment: PaymentRecord;
   /** Unix seconds; defaults to now. */
   createdAt?: number;
@@ -222,15 +263,27 @@ export function verifyReceiptEvent(input: unknown, context: CircleContext): Rece
     ? { ok: true, detail: "signed by a member of this circle", pubkey: event.pubkey }
     : { ok: false, detail: "signed by someone outside this circle", pubkey: event.pubkey };
 
+  // With a band, the invoice must match the sats the receipt records, and
+  // those sats must fit the band; the exact figure is the payer's own.
+  const band = typeof context.amount === "bigint" ? null : context.amount;
+  const outside = band ? amountOutsideBand(content, band) : null;
   const result = verifyReceipt({
     invoice: content.invoice,
     preimage: content.preimage,
     address: context.recipient.address,
     metadata: content.metadata,
     knownNodeKeys: context.recipient.knownNodeKeys,
-    expectedAmountMsat: context.expectedAmountMsat,
+    expectedAmountMsat: band ? content.amountMsat : (context.amount as bigint),
     network: context.network ?? "bc",
   });
+  if (outside) {
+    result.checks = result.checks.map((c) => (c.check === "amount" ? { check: "amount", ok: false, detail: outside } : c));
+    result.ok = false;
+  } else if (band) {
+    result.checks = result.checks.map((c) =>
+      c.check === "amount" && c.ok ? { ...c, detail: "contribution paid; sats within the band of today's price" } : c,
+    );
+  }
 
   let paymentHash: string | undefined;
   try {

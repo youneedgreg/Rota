@@ -1,4 +1,6 @@
 export {
+  AMOUNT_TOLERANCE,
+  amountOutsideBand,
   createReceiptEvent,
   newCircleSecret,
   newMemberSecret,
@@ -7,6 +9,7 @@ export {
   ReceiptRefused,
   roundClaims,
   verifyReceiptEvent,
+  type AmountBand,
   type CircleContext,
   type PaymentRecord,
   type ReceiptContent,
@@ -33,3 +36,4 @@ export {
   type MemberProfile,
 } from "./circle-events";
 export { fetchCircle, fetchEvents, fetchReceipts, publishEvent, publishReceipt } from "./relay";
+export { roundContext, roundView, type CheckedReceipt, type RoundView } from "./round";

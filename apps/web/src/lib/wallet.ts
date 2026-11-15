@@ -20,7 +20,7 @@ import {
   type SentPayment,
 } from "@rota/wallet";
 
-const STORAGE_KEY = "rota.wallet.v1";
+import { BUILT_IN_WALLET_KEY as STORAGE_KEY } from "./storage-keys";
 
 /**
  * "mainnet" (the default, and the demo) or "regtest" (Lightspark's free test
