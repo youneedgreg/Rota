@@ -2,6 +2,20 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-15 · Receipts on the relay
+
+**One Nostr event per payment, kind 3570, through `nostr-tools` 2.25.4.** A regular event, not a replaceable one, so nobody can overwrite a receipt later. 3570 isn't in the NIPs registry (checked 2026-11-15). nostr-tools is pinned to a release more than two weeks old; `@getalby/sdk` brings its own newer copy for NWC.
+
+**Signed by the paying member, encrypted for the circle.** Each circle has its own key pair, and its secret travels in the invite link. The member encrypts with NIP-44 using their own key and the circle's public key, so anyone holding the invite link can decrypt and nobody else can. The relay sees only the member's public key, the circle's public key, the round number and ciphertext. The address, invoice, preimage and amounts are all encrypted.
+
+**The phone refuses to publish a receipt that fails the four checks.** The checks run right after paying, before signing.
+
+**When checking a receipt, the recipient, their nodes and the amount come from the circle's own record, not from the event.** So a member can't vouch for their own receipt. The member's signature must verify and the key must be on the circle's member list. That is the "by this member" half of check 4. Events are rebuilt from their signed fields before checking, because nostr-tools caches a "verified" flag on the event object that would otherwise survive a later change.
+
+**One payment counts once.** Every member can decrypt every receipt, so a member could copy someone else's invoice and preimage into a receipt of their own, and it would pass all four checks. When two members claim the same payment hash, both are shown as disputed until the recipient's signed "received" record settles it (not built yet). Binding the payer into the invoice itself, for example with an LNURL comment, would stop this at the source; whether bitcoin.co.ke accepts comments is not checked.
+
+**Tested** with generated invoices (19 unit tests) and once against the local strfry relay: publish, read back by circle and round, decrypt and verify. That relay test runs only when `ROTA_TEST_RELAY` is set, so CI skips it. No real payment has gone through it yet.
+
 ## 2026-11-15 · The wallets: built-in and your own
 
 **Built-in wallet: Breez SDK (Spark) 0.28.4, in the browser.** The SDK runs as WebAssembly on the member's phone and keeps its state in the browser's IndexedDB, so the keys never leave the device. It loads from the SDK's browser entry and only on the client (`init()` before anything else). Its Node storage (better-sqlite3) is skipped at install because the browser never uses it.
