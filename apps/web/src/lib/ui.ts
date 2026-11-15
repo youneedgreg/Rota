@@ -4,11 +4,6 @@ export const secondary = "min-h-12 rounded-lg border border-current px-4 font-me
 export const input = "min-h-12 w-full rounded-lg border border-current/30 bg-transparent px-3";
 export const field = "block space-y-2";
 
-export function explain(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message;
-  return "Something went wrong. Try again.";
-}
-
 /** Shows a payout address without the middle of a phone number: 2547•••••678@bitcoin.co.ke. */
 export function maskAddress(address: string): string {
   const [user, domain] = address.split("@");

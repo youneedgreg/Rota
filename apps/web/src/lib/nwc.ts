@@ -15,6 +15,7 @@ import {
 } from "@rota/wallet";
 
 import { NWC_KEY as STORAGE_KEY } from "./storage-keys";
+import { UiError } from "./messages";
 
 /** Alby Hub's approval page for new connections; a self-hosted Hub uses its own address. */
 export const DEFAULT_APPROVAL_PAGE = "https://my.albyhub.com/apps/new";
@@ -66,7 +67,7 @@ export async function connectWithApprovalPage(options: {
 }): Promise<ConnectionReport> {
   const url = new URL(options.approvalPage);
   if (url.protocol !== "https:" && url.hostname !== "localhost" && url.hostname !== "127.0.0.1") {
-    throw new Error("The wallet's approval page must use HTTPS.");
+    throw new UiError("err.approvalHttps");
   }
   const client = await NWCClient.fromAuthorizationUrl(
     url.toString(),
@@ -83,13 +84,13 @@ export async function connectWithString(options: {
 }): Promise<ConnectionReport> {
   const text = options.connection.trim();
   if (!text.startsWith("nostr+walletconnect://")) {
-    throw new Error("That isn't a wallet connection. It starts with nostr+walletconnect://");
+    throw new UiError("err.notConnection");
   }
   let client: NWCClient;
   try {
     client = new NWCClient({ nostrWalletConnectUrl: text, requireSecret: true });
   } catch {
-    throw new Error("That wallet connection couldn't be read. Copy it again from your wallet.");
+    throw new UiError("err.badConnection");
   }
   return acceptAndSave(client, options.contributionSats, options.pin);
 }
@@ -97,7 +98,7 @@ export async function connectWithString(options: {
 /** Unlocks the saved connection with the PIN. Close it when done. */
 export async function openConnection(pin: string): Promise<NWCClient> {
   const sealed = savedConnection();
-  if (!sealed) throw new Error("No wallet is connected on this device.");
+  if (!sealed) throw new UiError("err.noConnection");
   return new NWCClient({ nostrWalletConnectUrl: await openSecret(sealed, pin), requireSecret: true });
 }
 

@@ -19,6 +19,7 @@ import {
   type MemberProfile,
 } from "@rota/records";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
+import { UiError } from "./messages";
 
 const MEMBER_KEY = "rota.member.v1";
 const CIRCLES_KEY = "rota.circles.v1";
@@ -85,12 +86,12 @@ export function payoutAddressFrom(text: string): string {
  */
 export async function profileFor(name: string, typedAddress: string): Promise<MemberProfile> {
   const address = normalizeAddress(payoutAddressFrom(typedAddress));
-  if (!address) throw new Error("That isn't a Lightning address or a Kenyan mobile number.");
+  if (!address) throw new UiError("err.notAddress");
   let nodeKey: string;
   try {
     ({ nodeKey } = await probeAddress(address, { fetch: window.fetch.bind(window) }));
   } catch {
-    throw new Error("Rota couldn't reach that payout address. Check it and try again.");
+    throw new UiError("err.unreachablePayout");
   }
   return { name, payoutAddress: address, knownNodeKeys: [nodeKey] };
 }
@@ -115,7 +116,7 @@ export async function loadCircle(invite: string): Promise<CircleView | null> {
 
 export async function joinCircle(invite: string, profile: MemberProfile): Promise<void> {
   const decoded = decodeInvite(invite);
-  if (!decoded) throw new Error("This invite link is broken.");
+  if (!decoded) throw new UiError("err.brokenInvite");
   await publishEvent(relayUrl(), createJoinEvent({ memberSecret: memberSecret(), ...decoded, profile }));
 }
 

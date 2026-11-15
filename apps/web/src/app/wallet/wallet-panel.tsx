@@ -1,8 +1,8 @@
 "use client";
 
 import type { BreezSdk } from "@breeztech/breez-sdk-spark/ssr";
-import { decodeInvoice, InvoiceError } from "@rota/receipts";
-import { generateWords, MIN_PIN_LENGTH, normalizeWords, VaultError } from "@rota/wallet";
+import { decodeInvoice } from "@rota/receipts";
+import { generateWords, MIN_PIN_LENGTH, normalizeWords } from "@rota/wallet";
 import { useEffect, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import {
   balanceSats,
@@ -14,6 +14,8 @@ import {
   unlockWallet,
   walletNetwork,
 } from "@/lib/wallet";
+import { useT } from "@/lib/lang";
+import { UiError } from "@/lib/messages";
 
 type Step =
   | { name: "loading" }
@@ -23,13 +25,6 @@ type Step =
   | { name: "pin"; words: string }
   | { name: "locked" }
   | { name: "open"; sdk: BreezSdk };
-
-/** Plain-language text for any error, without stack traces or internals. */
-function explain(error: unknown): string {
-  if (error instanceof VaultError || error instanceof InvoiceError) return error.message;
-  if (error instanceof Error && error.message) return error.message;
-  return "Something went wrong. Try again.";
-}
 
 const button =
   "min-h-12 rounded-lg bg-foreground px-4 font-medium text-background disabled:opacity-50";
@@ -56,15 +51,16 @@ export function WalletPanel() {
   const hasWallet = useSyncExternalStore(noSubscribe, () => savedWallet() !== null, () => null);
   const [chosen, setStep] = useState<Step | null>(null);
   const step: Step = chosen ?? (hasWallet === null ? { name: "loading" } : hasWallet ? { name: "locked" } : { name: "start" });
+  const { t } = useT();
 
   return (
     <div className="space-y-4">
       {walletNetwork() === "regtest" && (
         <p className="rounded-lg bg-amber-100 p-3 text-amber-900">
-          Test network: these coins have no value, and Lightning payments don&apos;t work here.
+          {t("wallet.regtest")}
         </p>
       )}
-      {step.name === "loading" && <p>Loading…</p>}
+      {step.name === "loading" && <p>{t("common.loading")}</p>}
       {step.name === "start" && <Start onCreate={(words) => setStep({ name: "backup", words })} onRestore={() => setStep({ name: "restore" })} />}
       {step.name === "backup" && <Backup words={step.words} onDone={() => setStep({ name: "pin", words: step.words })} />}
       {step.name === "restore" && <Restore onDone={(words) => setStep({ name: "pin", words })} onBack={() => setStep({ name: "start" })} />}
@@ -76,15 +72,16 @@ export function WalletPanel() {
 }
 
 function Start({ onCreate, onRestore }: { onCreate: (words: string) => void; onRestore: () => void }) {
+  const { t } = useT();
   return (
     <Card>
-      <h2 className="text-xl font-medium">Set up your wallet</h2>
+      <h2 className="text-xl font-medium">{t("wallet.setup")}</h2>
       <div className="flex flex-col gap-3 sm:flex-row">
         <button className={button} onClick={() => onCreate(generateWords())}>
-          Create a new wallet
+          {t("wallet.create")}
         </button>
         <button className={secondary} onClick={onRestore}>
-          I have recovery words
+          {t("wallet.haveWords")}
         </button>
       </div>
     </Card>
@@ -93,12 +90,12 @@ function Start({ onCreate, onRestore }: { onCreate: (words: string) => void; onR
 
 function Backup({ words, onDone }: { words: string; onDone: () => void }) {
   const [saved, setSaved] = useState(false);
+  const { t } = useT();
   return (
     <Card>
-      <h2 className="text-xl font-medium">Write down these 12 words</h2>
+      <h2 className="text-xl font-medium">{t("wallet.backupTitle")}</h2>
       <p className="leading-7">
-        They are the only way to get your money back if you lose this phone. Write them on paper, in order. Never type
-        them into a chat or a website, and never share them. Rota will never ask for them.
+        {t("wallet.backupText")}
       </p>
       <ol className="grid grid-cols-2 gap-2 font-mono sm:grid-cols-3">
         {words.split(" ").map((word, i) => (
@@ -109,10 +106,10 @@ function Backup({ words, onDone }: { words: string; onDone: () => void }) {
       </ol>
       <label className="flex min-h-12 items-center gap-3">
         <input type="checkbox" className="size-5" checked={saved} onChange={(e) => setSaved(e.target.checked)} />
-        I have written them down
+        {t("wallet.written")}
       </label>
       <button className={button} disabled={!saved} onClick={onDone}>
-        Continue
+        {t("common.continue")}
       </button>
     </Card>
   );
@@ -121,6 +118,7 @@ function Backup({ words, onDone }: { words: string; onDone: () => void }) {
 function Restore({ onDone, onBack }: { onDone: (words: string) => void; onBack: () => void }) {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { t, explain } = useT();
   function submit(e: FormEvent) {
     e.preventDefault();
     try {
@@ -132,9 +130,9 @@ function Restore({ onDone, onBack }: { onDone: (words: string) => void; onBack: 
   return (
     <Card>
       <form onSubmit={submit} className="space-y-4">
-        <h2 className="text-xl font-medium">Restore your wallet</h2>
+        <h2 className="text-xl font-medium">{t("wallet.restoreTitle")}</h2>
         <label className="block space-y-2">
-          <span>Your 12 recovery words, in order</span>
+          <span>{t("wallet.wordsLabel")}</span>
           <textarea
             className={`${input} min-h-28 py-2 font-mono`}
             value={text}
@@ -147,10 +145,10 @@ function Restore({ onDone, onBack }: { onDone: (words: string) => void; onBack: 
         <ErrorText text={error} />
         <div className="flex gap-3">
           <button type="submit" className={button}>
-            Continue
+            {t("common.continue")}
           </button>
           <button type="button" className={secondary} onClick={onBack}>
-            Back
+            {t("common.back")}
           </button>
         </div>
       </form>
@@ -163,9 +161,10 @@ function ChoosePin({ words, onDone }: { words: string; onDone: () => void }) {
   const [again, setAgain] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { t, explain } = useT();
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (pin !== again) return setError("The two PINs don't match.");
+    if (pin !== again) return setError(t("wallet.pinMismatch"));
     setBusy(true);
     setError(null);
     try {
@@ -180,22 +179,21 @@ function ChoosePin({ words, onDone }: { words: string; onDone: () => void }) {
   return (
     <Card>
       <form onSubmit={submit} className="space-y-4">
-        <h2 className="text-xl font-medium">Choose a PIN</h2>
+        <h2 className="text-xl font-medium">{t("wallet.pinTitle")}</h2>
         <p className="leading-7">
-          Your recovery words are saved on this device, locked with this PIN. At least {MIN_PIN_LENGTH} characters;
-          longer is safer.
+          {t("wallet.pinText", { min: MIN_PIN_LENGTH })}
         </p>
         <label className="block space-y-2">
-          <span>PIN</span>
+          <span>{t("common.pin")}</span>
           <input className={input} type="password" value={pin} onChange={(e) => setPin(e.target.value)} autoComplete="new-password" />
         </label>
         <label className="block space-y-2">
-          <span>PIN again</span>
+          <span>{t("wallet.pinAgain")}</span>
           <input className={input} type="password" value={again} onChange={(e) => setAgain(e.target.value)} autoComplete="new-password" />
         </label>
         <ErrorText text={error} />
         <button type="submit" className={button} disabled={busy}>
-          {busy ? "Locking…" : "Save wallet"}
+          {t(busy ? "wallet.locking" : "wallet.save")}
         </button>
       </form>
     </Card>
@@ -206,6 +204,7 @@ function Unlock({ onOpen, onForget }: { onOpen: (sdk: BreezSdk) => void; onForge
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { t, explain } = useT();
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -219,7 +218,7 @@ function Unlock({ onOpen, onForget }: { onOpen: (sdk: BreezSdk) => void; onForge
     }
   }
   function forget() {
-    if (window.confirm("Remove this wallet from this device? You'll need your 12 recovery words to get it back.")) {
+    if (window.confirm(t("wallet.forgetConfirm"))) {
       forgetWallet();
       onForget();
     }
@@ -227,18 +226,18 @@ function Unlock({ onOpen, onForget }: { onOpen: (sdk: BreezSdk) => void; onForge
   return (
     <Card>
       <form onSubmit={submit} className="space-y-4">
-        <h2 className="text-xl font-medium">Unlock your wallet</h2>
+        <h2 className="text-xl font-medium">{t("wallet.unlockTitle")}</h2>
         <label className="block space-y-2">
-          <span>PIN</span>
+          <span>{t("common.pin")}</span>
           <input className={input} type="password" value={pin} onChange={(e) => setPin(e.target.value)} autoComplete="current-password" />
         </label>
         <ErrorText text={error} />
         <div className="flex flex-wrap gap-3">
           <button type="submit" className={button} disabled={busy}>
-            {busy ? "Unlocking…" : "Unlock"}
+            {t(busy ? "common.unlocking" : "common.unlock")}
           </button>
           <button type="button" className={secondary} onClick={forget}>
-            Remove from this device
+            {t("wallet.forget")}
           </button>
         </div>
       </form>
@@ -249,6 +248,7 @@ function Unlock({ onOpen, onForget }: { onOpen: (sdk: BreezSdk) => void; onForge
 function OpenWallet({ sdk }: { sdk: BreezSdk }) {
   const [balance, setBalance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t, explain, num } = useT();
 
   async function refresh() {
     try {
@@ -267,18 +267,18 @@ function OpenWallet({ sdk }: { sdk: BreezSdk }) {
     return () => {
       live = false;
     };
-  }, [sdk]);
+  }, [sdk, explain]);
 
   return (
     <div className="space-y-4">
       <Card>
-        <h2 className="text-xl font-medium">Balance</h2>
+        <h2 className="text-xl font-medium">{t("wallet.balance")}</h2>
         <p className="text-3xl font-semibold" aria-live="polite">
-          {balance === null ? "…" : `${balance.toLocaleString()} sats`}
+          {balance === null ? "…" : t("common.sats", { n: num(balance) })}
         </p>
         <ErrorText text={error} />
         <button className={secondary} onClick={refresh}>
-          Refresh
+          {t("common.refresh")}
         </button>
       </Card>
       <Receive sdk={sdk} />
@@ -292,10 +292,11 @@ function Receive({ sdk }: { sdk: BreezSdk }) {
   const [invoice, setInvoice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { t, explain } = useT();
   async function submit(e: FormEvent) {
     e.preventDefault();
     const amount = Number(sats);
-    if (!Number.isInteger(amount) || amount < 1) return setError("Enter a whole number of sats.");
+    if (!Number.isInteger(amount) || amount < 1) return setError(t("wallet.wholeSats"));
     setBusy(true);
     setError(null);
     try {
@@ -309,21 +310,21 @@ function Receive({ sdk }: { sdk: BreezSdk }) {
   return (
     <Card>
       <form onSubmit={submit} className="space-y-4">
-        <h2 className="text-xl font-medium">Receive</h2>
+        <h2 className="text-xl font-medium">{t("wallet.receive")}</h2>
         <label className="block space-y-2">
-          <span>Amount in sats</span>
+          <span>{t("wallet.amountSats")}</span>
           <input className={input} inputMode="numeric" value={sats} onChange={(e) => setSats(e.target.value)} />
         </label>
         <ErrorText text={error} />
         <button type="submit" className={button} disabled={busy}>
-          {busy ? "Creating…" : "Create invoice"}
+          {t(busy ? "wallet.creating" : "wallet.createInvoice")}
         </button>
       </form>
       {invoice && (
         <div className="space-y-2">
           <p className="break-all rounded-md border border-current/20 p-2 font-mono text-sm">{invoice}</p>
           <button className={secondary} onClick={() => navigator.clipboard.writeText(invoice)}>
-            Copy invoice
+            {t("wallet.copyInvoice")}
           </button>
         </div>
       )}
@@ -336,6 +337,7 @@ function Pay({ sdk, onPaid }: { sdk: BreezSdk; onPaid: () => void }) {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { t, explain, num } = useT();
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -343,13 +345,13 @@ function Pay({ sdk, onPaid }: { sdk: BreezSdk; onPaid: () => void }) {
     try {
       const invoice = text.trim().replace(/^lightning:/i, "");
       const decoded = decodeInvoice(invoice);
-      if (decoded.amountMsat === null) throw new Error("This invoice has no amount. Ask for one with an amount.");
-      if (decoded.amountMsat % 1000n !== 0n) throw new Error("This invoice asks for a fraction of a sat.");
+      if (decoded.amountMsat === null) throw new UiError("wallet.noAmount");
+      if (decoded.amountMsat % 1000n !== 0n) throw new UiError("wallet.fraction");
       const sats = decoded.amountMsat / 1000n;
-      if (!window.confirm(`Pay ${sats.toLocaleString()} sats?`)) return;
+      if (!window.confirm(t("wallet.confirmPay", { sats: num(sats) }))) return;
       setBusy(true);
       const paid = await payInvoice(sdk, { invoice, amountMsat: decoded.amountMsat, paymentHash: decoded.paymentHash });
-      setResult(`Paid ${sats.toLocaleString()} sats (fee ${paid.feeSats} sats). Proof of payment received.`);
+      setResult(t("wallet.paidResult", { sats: num(sats), fee: num(paid.feeSats) }));
       setText("");
       onPaid();
     } catch (err) {
@@ -361,9 +363,9 @@ function Pay({ sdk, onPaid }: { sdk: BreezSdk; onPaid: () => void }) {
   return (
     <Card>
       <form onSubmit={submit} className="space-y-4">
-        <h2 className="text-xl font-medium">Pay an invoice</h2>
+        <h2 className="text-xl font-medium">{t("wallet.payTitle")}</h2>
         <label className="block space-y-2">
-          <span>Lightning invoice</span>
+          <span>{t("wallet.invoice")}</span>
           <textarea
             className={`${input} min-h-24 py-2 font-mono text-sm`}
             value={text}
@@ -380,7 +382,7 @@ function Pay({ sdk, onPaid }: { sdk: BreezSdk; onPaid: () => void }) {
           </p>
         )}
         <button type="submit" className={button} disabled={busy || !text.trim()}>
-          {busy ? "Paying…" : "Pay"}
+          {t(busy ? "common.paying" : "common.pay")}
         </button>
       </form>
     </Card>

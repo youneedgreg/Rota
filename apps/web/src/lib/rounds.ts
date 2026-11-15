@@ -23,6 +23,7 @@ import {
   type RoundView,
 } from "@rota/records";
 import { memberPubkey, memberSecret, relayUrl } from "./circles";
+import { UiError, type MessageKey } from "./messages";
 
 /** A signed Nostr event, as @rota/records publishes it. */
 type Event = Parameters<typeof publishEvent>[1];
@@ -89,7 +90,7 @@ export async function sendUnsent(): Promise<void> {
 /** Reads one round's receipts from the relay and checks each of them on this device. */
 export async function loadRound(invite: string, view: CircleView, round: number): Promise<RoundView> {
   const decoded = decodeInvite(invite);
-  if (!decoded || !view.circle) throw new Error("This circle isn't ready yet.");
+  if (!decoded || !view.circle) throw new UiError("err.notReady");
   const [events, marketMsat] = await Promise.all([
     fetchReceipts(relayUrl(), view.circlePubkey, { round }),
     marketMsatFor(view),
@@ -132,27 +133,27 @@ export async function payRound(options: {
   view: CircleView;
   round: number;
   wallet: PayingWallet;
-  onStep: (text: string) => void;
+  onStep: (step: MessageKey) => void;
 }): Promise<PaidRound> {
   const { invite, view, round, wallet, onStep } = options;
   const decoded = decodeInvite(invite);
   const circle = view.circle;
-  if (!decoded || !circle || !view.sealed) throw new Error("The organizer hasn't confirmed the seats yet.");
+  if (!decoded || !circle || !view.sealed) throw new UiError("err.notSealed");
 
   const me = memberPubkey();
   const recipientId = getRound(circle, round).recipient.id;
   const recipient = view.members.find((m) => m.pubkey === recipientId);
-  if (!recipient) throw new Error("This round's recipient isn't in the circle.");
-  if (!view.members.some((m) => m.pubkey === me)) throw new Error("This device isn't a member of the circle.");
-  if (me === recipientId) throw new Error("You receive this round, so you don't pay it.");
+  if (!recipient) throw new UiError("err.noRecipient");
+  if (!view.members.some((m) => m.pubkey === me)) throw new UiError("err.notMember");
+  if (me === recipientId) throw new UiError("err.youReceive");
 
   const fetcher = { fetch: window.fetch.bind(window) };
   const network = invoiceNetwork();
   const { currency, contribution } = view.draft;
 
-  onStep("Asking the recipient's address for its terms…");
+  onStep("step.terms");
   const params = await fetchPayParams(recipient.payoutAddress, fetcher);
-  onStep("Working out the sats…");
+  onStep("step.sats");
   const quote = await todaysQuote();
   const amountMsat = amountFor(params, contribution, currency, quote);
   // The other members will check this payment against today's price: don't pay one they'd reject.
@@ -160,38 +161,38 @@ export async function payRound(options: {
     { amountMsat, local: { currency, amount: contribution } },
     { currency, contribution, marketMsat: localToMsat(contribution, currency, quote), tolerance: AMOUNT_TOLERANCE },
   );
-  if (outside) throw new Error(`Not paid: the recipient's rate is off (${outside}).`);
+  if (outside) throw new UiError("err.rateOff");
 
-  onStep("Fetching and checking the invoice…");
+  onStep("step.invoice");
   const checked = await fetchInvoice(params, amountMsat, { ...fetcher, knownNodeKeys: recipient.knownNodeKeys, network });
   const approved = { invoice: checked.invoice, amountMsat, paymentHash: checked.decoded.paymentHash };
 
   let preimage: string;
   let feeSats: number;
   if (wallet.kind === "built-in") {
-    onStep("Unlocking your wallet…");
+    onStep("step.unlock");
     // Loaded here so the circle page doesn't download the wallet unless someone pays.
     const { payInvoice, unlockWallet } = await import("./wallet");
     const sdk = await unlockWallet(wallet.pin);
     try {
-      onStep("Paying…");
+      onStep("step.paying");
       ({ preimage, feeSats } = await payInvoice(sdk, approved));
     } finally {
       await sdk.disconnect().catch(() => undefined);
     }
   } else {
-    onStep("Opening your wallet connection…");
+    onStep("step.connection");
     const { openConnection, payWithConnection } = await import("./nwc");
     const client: NWCClient = await openConnection(wallet.pin);
     try {
-      onStep("Paying…");
+      onStep("step.paying");
       ({ preimage, feeSats } = await payWithConnection(client, approved));
     } finally {
       client.close();
     }
   }
 
-  onStep("Signing your receipt…");
+  onStep("step.signing");
   const event = createReceiptEvent({
     memberSecret: memberSecret(),
     context: {
@@ -213,7 +214,7 @@ export async function payRound(options: {
   });
   // Saved before publishing: if the relay is down, the receipt waits on this device.
   keepUnsent(event);
-  onStep("Publishing your receipt…");
+  onStep("step.publishing");
   try {
     await publishEvent(relayUrl(), event);
     dropUnsent(event.id);

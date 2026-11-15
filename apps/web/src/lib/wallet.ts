@@ -21,6 +21,7 @@ import {
 } from "@rota/wallet";
 
 import { BUILT_IN_WALLET_KEY as STORAGE_KEY } from "./storage-keys";
+import { UiError } from "./messages";
 
 /**
  * "mainnet" (the default, and the demo) or "regtest" (Lightspark's free test
@@ -52,17 +53,13 @@ export function forgetWallet(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-export class WalletSetupError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "WalletSetupError";
-  }
-}
+/** The wallet can't start on this device; its message comes from the app's own text. */
+export class WalletSetupError extends UiError {}
 
 /** Unlocks the saved words with the PIN and connects the wallet. */
 export async function unlockWallet(pin: string): Promise<BreezSdk> {
   const sealed = savedWallet();
-  if (!sealed) throw new WalletSetupError("There's no wallet on this device yet.");
+  if (!sealed) throw new WalletSetupError("err.noWallet");
   const words = await openWords(sealed, pin);
   return connectWallet(words);
 }
@@ -72,7 +69,7 @@ async function connectWallet(mnemonic: string): Promise<BreezSdk> {
   const apiKey = process.env.NEXT_PUBLIC_BREEZ_API_KEY;
   // Breez requires a key on mainnet; its regtest network doesn't.
   if (network === "mainnet" && !apiKey) {
-    throw new WalletSetupError("This copy of Rota has no Breez API key, so the built-in wallet can't start.");
+    throw new WalletSetupError("err.noBreezKey");
   }
   await init();
   const config = defaultConfig(network);

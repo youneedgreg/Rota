@@ -4,7 +4,9 @@ import type { CircleView } from "@rota/records";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type FormEvent } from "react";
 import { inviteUrl, joinCircle, loadCircle, memberPubkey, profileFor, rememberCircle, sealCircle } from "@/lib/circles";
-import { button, explain, field, input, maskAddress, secondary } from "@/lib/ui";
+import { useT } from "@/lib/lang";
+import type { MessageKey } from "@/lib/messages";
+import { button, field, input, maskAddress, secondary } from "@/lib/ui";
 import { RoundPanel } from "./round-panel";
 
 const REFRESH_MS = 10_000;
@@ -14,18 +16,20 @@ function subscribeHash(onChange: () => void) {
   return () => window.removeEventListener("hashchange", onChange);
 }
 
-function paceText(view: CircleView): string {
+function paceText(view: CircleView, { t, when }: Pick<ReturnType<typeof useT>, "t" | "when">): string {
   const s = view.draft.schedule;
-  const when = new Date(s.startsAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
-  if (s.kind === "demo") return `A round every ${s.roundMinutes} minutes from ${when} (demo)`;
-  return `A round every ${s.kind === "weekly" ? "week" : "month"} from ${when}`;
+  const start = when(new Date(s.startsAt));
+  if (s.kind === "demo") return t("circle.pace.demo", { minutes: s.roundMinutes, when: start });
+  return t(s.kind === "weekly" ? "circle.pace.weekly" : "circle.pace.monthly", { when: start });
 }
 
 export function CircleScreen() {
   const invite = useSyncExternalStore(subscribeHash, () => window.location.hash.slice(1), () => null);
   const me = useSyncExternalStore(subscribeHash, memberPubkey, () => null);
   const [view, setView] = useState<CircleView | null | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<MessageKey | null>(null);
+  const tools = useT();
+  const { t, num } = tools;
 
   const refresh = useCallback(async () => {
     if (!invite) return;
@@ -38,7 +42,7 @@ export function CircleScreen() {
         await sealCircle(invite, next);
       }
     } catch {
-      setError("Rota couldn't reach the circle's relay. It will keep trying.");
+      setError("circle.relayError");
     }
   }, [invite]);
 
@@ -51,17 +55,21 @@ export function CircleScreen() {
     };
   }, [refresh]);
 
-  if (invite === null) return <p>Loading…</p>;
+  if (invite === null) return <p>{t("common.loading")}</p>;
   if (!invite) {
     return (
       <p>
-        Open a circle from its invite link, or <Link className="underline" href="/circles/new">start one</Link>.
+        {t("circle.openFromLink")}
+        <Link className="underline" href="/circles/new">
+          {t("circle.startOne")}
+        </Link>
+        .
       </p>
     );
   }
-  if (view === undefined) return <p>{error ?? "Loading the circle…"}</p>;
+  if (view === undefined) return <p>{t(error ?? "circle.loading")}</p>;
   if (view === null) {
-    return <p role="alert">This invite link doesn&apos;t match a circle on this relay. Ask for the link again.</p>;
+    return <p role="alert">{t("circle.badInvite")}</p>;
   }
 
   const isMember = view.members.some((m) => m.pubkey === me);
@@ -72,34 +80,30 @@ export function CircleScreen() {
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">{draft.name}</h1>
         <p className="leading-7">
-          Each member pays {draft.contribution.toLocaleString()} {draft.currency} a round. {paceText(view)}.
+          {t("circle.contribution", { amount: num(draft.contribution), currency: draft.currency })} {paceText(view, tools)}.
         </p>
       </header>
 
-      {error && <p role="status">{error}</p>}
+      {error && <p role="status">{t(error)}</p>}
 
       {view.full && <RoundPanel invite={invite} view={view} me={me} />}
 
       <section aria-labelledby="seats" className="space-y-3 rounded-xl border border-current/20 p-4">
         <h2 id="seats" className="text-xl font-medium">
-          Seats {view.members.length} of {draft.seats}
+          {t("circle.seats", { taken: view.members.length, total: draft.seats })}
         </h2>
         <ol className="list-decimal space-y-2 pl-6">
           {view.members.map((m) => (
             <li key={m.pubkey}>
               <span className="font-medium">{m.name}</span>
-              {m.pubkey === view.organizer && " · organizer"}
-              {m.pubkey === me && " · you"}
-              <span className="block text-sm opacity-70">Paid at {maskAddress(m.payoutAddress)}</span>
+              {m.pubkey === view.organizer && t("circle.organizer")}
+              {m.pubkey === me && t("circle.you")}
+              <span className="block text-sm opacity-70">{t("circle.paidAt", { address: maskAddress(m.payoutAddress) })}</span>
             </li>
           ))}
         </ol>
         <p className="text-sm opacity-70">
-          {view.sealed
-            ? "Seats are final. Round 1 pays seat 1, round 2 pays seat 2, and so on."
-            : view.full
-              ? "Every seat is taken. The organizer's app will confirm the order the next time it opens."
-              : "Seats fill in the order people join. The organizer's app confirms the order once every seat is taken."}
+          {t(view.sealed ? "circle.sealed" : view.full ? "circle.fullUnsealed" : "circle.filling")}
         </p>
       </section>
 
@@ -111,15 +115,15 @@ export function CircleScreen() {
 
 function Invite({ invite }: { invite: string }) {
   const [copied, setCopied] = useState(false);
+  const { t } = useT();
   const url = inviteUrl(invite);
   return (
     <section aria-labelledby="invite" className="space-y-3 rounded-xl border border-current/20 p-4">
       <h2 id="invite" className="text-xl font-medium">
-        Invite members
+        {t("invite.title")}
       </h2>
       <p className="leading-7 opacity-80">
-        Anyone with this link can read the circle and take a free seat. Share it only with the people you&apos;re saving
-        with.
+        {t("invite.warning")}
       </p>
       <input className={`${input} font-mono text-sm`} readOnly value={url} onFocus={(e) => e.target.select()} />
       <button
@@ -130,7 +134,7 @@ function Invite({ invite }: { invite: string }) {
           setCopied(true);
         }}
       >
-        {copied ? "Copied" : "Copy the link"}
+        {t(copied ? "invite.copied" : "invite.copy")}
       </button>
     </section>
   );
@@ -140,15 +144,16 @@ function Join({ invite, onJoined }: { invite: string; onJoined: () => Promise<vo
   const [name, setName] = useState("");
   const [payout, setPayout] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState<MessageKey | null>(null);
+  const { t, explain } = useT();
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     try {
-      setBusy("Checking your payout address…");
+      setBusy("form.checkingPayout");
       const profile = await profileFor(name, payout);
-      setBusy("Taking your seat…");
+      setBusy("join.taking");
       await joinCircle(invite, profile);
       await onJoined();
     } catch (err) {
@@ -161,19 +166,19 @@ function Join({ invite, onJoined }: { invite: string; onJoined: () => Promise<vo
   return (
     <form onSubmit={submit} aria-labelledby="join" className="space-y-4 rounded-xl border border-current/20 p-4">
       <h2 id="join" className="text-xl font-medium">
-        Join this circle
+        {t("join.title")}
       </h2>
       <label className={field}>
-        <span>Your name</span>
+        <span>{t("form.yourName")}</span>
         <input className={input} value={name} onChange={(e) => setName(e.target.value)} maxLength={40} required />
       </label>
       <label className={field}>
-        <span>Where you get paid</span>
+        <span>{t("form.payout")}</span>
         <input
           className={input}
           value={payout}
           onChange={(e) => setPayout(e.target.value)}
-          placeholder="M-Pesa number (07…) or Lightning address"
+          placeholder={t("form.payoutPlaceholder")}
           autoComplete="off"
           required
         />
@@ -184,7 +189,7 @@ function Join({ invite, onJoined }: { invite: string; onJoined: () => Promise<vo
         </p>
       )}
       <button className={`${button} w-full`} disabled={busy !== null}>
-        {busy ?? "Join"}
+        {t(busy ?? "join.submit")}
       </button>
     </form>
   );
