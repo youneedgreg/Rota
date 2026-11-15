@@ -13,4 +13,23 @@ export {
   type ReceiptEventResult,
   type RoundClaim,
 } from "./records";
-export { fetchReceipts, publishReceipt } from "./relay";
+export {
+  assembleCircle,
+  checkDraft,
+  checkProfile,
+  CIRCLE_KIND,
+  CircleEventError,
+  createCircleEvent,
+  createJoinEvent,
+  createRosterEvent,
+  decodeInvite,
+  encodeInvite,
+  JOIN_KIND,
+  payoutFits,
+  ROSTER_KIND,
+  type CircleDraft,
+  type CircleMember,
+  type CircleView,
+  type MemberProfile,
+} from "./circle-events";
+export { fetchCircle, fetchEvents, fetchReceipts, publishEvent, publishReceipt } from "./relay";
