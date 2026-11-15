@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type FormEvent } from "react";
 import { inviteUrl, joinCircle, loadCircle, memberPubkey, profileFor, rememberCircle, sealCircle } from "@/lib/circles";
 import { button, explain, field, input, maskAddress, secondary } from "@/lib/ui";
+import { RoundPanel } from "./round-panel";
 
 const REFRESH_MS = 10_000;
 
@@ -76,6 +77,8 @@ export function CircleScreen() {
       </header>
 
       {error && <p role="status">{error}</p>}
+
+      {view.full && <RoundPanel invite={invite} view={view} me={me} />}
 
       <section aria-labelledby="seats" className="space-y-3 rounded-xl border border-current/20 p-4">
         <h2 id="seats" className="text-xl font-medium">

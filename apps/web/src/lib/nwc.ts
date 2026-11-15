@@ -14,7 +14,7 @@ import {
   type SealedWords,
 } from "@rota/wallet";
 
-const STORAGE_KEY = "rota.nwc.v1";
+import { NWC_KEY as STORAGE_KEY } from "./storage-keys";
 
 /** Alby Hub's approval page for new connections; a self-hosted Hub uses its own address. */
 export const DEFAULT_APPROVAL_PAGE = "https://my.albyhub.com/apps/new";
