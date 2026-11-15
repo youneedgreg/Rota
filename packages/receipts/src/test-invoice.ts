@@ -1,5 +1,5 @@
 // Test-only: builds signed BOLT11 invoices from known keys, so tests never
-// depend on real payments or real people's addresses. Not exported by the package.
+// depend on real payments or real people's addresses. Exported as "@rota/receipts/testing" for tests only.
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes, utf8ToBytes } from "@noble/hashes/utils.js";
