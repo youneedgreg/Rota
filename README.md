@@ -30,7 +30,7 @@ pnpm build
 |---|---|
 | `apps/web` | The Next.js PWA |
 | `packages/receipts` | The receipt checker: proves a Lightning payment reached a specific address |
-| `packages/records` | Receipts on Nostr: one signed, NIP-44 encrypted event (kind 3570) per payment on the circle's relay |
+| `packages/records` | The circle on Nostr: its definition, joins and roster (kinds 3571–3573) and one signed receipt per payment (kind 3570), all NIP-44 encrypted on the circle's relay |
 
 The relay test in `packages/records` runs only against a local relay: start it with `docker compose up -d relay`, then run `ROTA_TEST_RELAY=ws://127.0.0.1:7777 pnpm --filter @rota/records test`.
 

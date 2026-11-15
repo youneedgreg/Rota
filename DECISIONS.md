@@ -2,6 +2,25 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-15 · Circles on the relay, no backend
+
+**A circle lives on its relay, not on a Rota server.** There are three event kinds, all regular and all encrypted for the circle with NIP-44:
+- the organizer's circle definition (kind 3571);
+- each member's join (kind 3572): name, payout address and the node that signed a test invoice for it;
+- the organizer's roster (kind 3573).
+
+Rota needs no database, `docker compose up` stays app + relay, and no Rota server ever sees names or phone numbers.
+
+**The invite link is `/circle#<circle secret>.<definition id>`.** Browsers don't send the part after `#` to any server. The definition's id pins the exact definition the organizer signed, so someone else holding the link can't publish a rival one. Anyone with the link can read the circle and take a free seat, which the page says next to the link.
+
+**Seats fill in join order, then the organizer's device fixes them.** Joins are taken in time order (earliest join per member, one seat per payout address, M-Pesa only in KES circles). Event times are set by whoever signs, so a late joiner could backdate their join and push someone out, even after the circle is full. The tests show this. Once every seat is taken, the organizer's device publishes a signed roster, and from then on the order can't change. A roster counts only if the organizer signed it and everyone on it has joined.
+
+**Each member's payout address is checked on their own phone when they join.** It fetches the address's pay parameters and an unpaid invoice, and records the node that signed it for receipt check 3. Nothing is paid.
+
+**The member's Nostr key is kept in plain browser storage.** It signs joins and receipts but can't move money. Someone with access to the device could sign as that member, but a fake receipt still fails the paid check. Keeping it sealed with the PIN would mean a PIN prompt at every publish.
+
+**M-Pesa numbers are shown masked** (2547•••••678@bitcoin.co.ke) on the circle page.
+
 ## 2026-11-15 · Receipts on the relay
 
 **One Nostr event per payment, kind 3570, through `nostr-tools` 2.25.4.** A regular event, not a replaceable one, so nobody can overwrite a receipt later. 3570 isn't in the NIPs registry (checked 2026-11-15). nostr-tools is pinned to a release more than two weeks old; `@getalby/sdk` brings its own newer copy for NWC.
