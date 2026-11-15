@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NwcPanel } from "./nwc-panel";
 import { WalletPanel } from "./wallet-panel";
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function WalletPage() {
         </p>
       </header>
       <WalletPanel />
+      <NwcPanel />
     </main>
   );
 }

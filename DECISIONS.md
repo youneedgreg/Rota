@@ -2,6 +2,28 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-15 · The wallets: built-in and your own
+
+**Built-in wallet: Breez SDK (Spark) 0.28.4, in the browser.** The SDK runs as WebAssembly on the member's phone and keeps its state in the browser's IndexedDB, so the keys never leave the device. It loads from the SDK's browser entry and only on the client (`init()` before anything else). Its Node storage (better-sqlite3) is skipped at install because the browser never uses it.
+
+**The Breez API key ships to the browser.** The SDK needs it on mainnet (not on regtest) and runs in the browser, so the key is a `NEXT_PUBLIC_` variable and anyone can read it from the page. It identifies the app to Breez; it can't move anyone's money. The hosted demo uses its own key, separate from the development one.
+
+**Recovery words and wallet connections are encrypted with a PIN on the device.** PBKDF2-HMAC-SHA256 at 600,000 iterations (OWASP's 2023 figure; stored in each blob so it can change), then AES-256-GCM with a fresh salt and nonce each time. A wrong PIN and a changed blob both fail the same way. Minimum 6 characters. Limit, in the threat model: someone who copies the blob can guess PINs offline, so a longer passphrase is stronger.
+
+**Every built-in payment is checked twice.** Before sending, the SDK's quote must be for the same invoice and the exact amount Rota approved, with a fee of at most 1% (10 sats minimum). After sending, the payment must be complete and its preimage must hash to the invoice's payment hash. The SDK is told not to pay over Spark (`preferSpark: false`), because a Spark transfer returns no preimage and so no receipt.
+
+**Each payment's idempotency key comes from its payment hash,** so tapping Pay twice can't pay twice. The SDK refused the raw hash as a key ("invalid idempotency key") and doesn't document the format; a UUID-shaped key made from the hash's first 16 bytes (version and variant bits set) works.
+
+**Compose builds the app on regtest by default,** so `docker compose up` needs no API key and can't spend real money. Regtest has no Lightning, so only wallet creation, backup, locking and unlocking can be tried there. Mainnet is chosen in `.env`.
+
+**Your own wallet: Nostr Wallet Connect (NIP-47) through `@getalby/sdk` 9.0.0.** Rota asks for a connection that can do three things only (`pay_invoice`, `get_info`, `get_budget`), with a monthly budget of one contribution plus 25% (room for fees and price moves) that expires at the end of the cycle. The wallet enforces the budget; Rota can't raise it.
+
+**Rota refuses a connection wider than it asked for.** Before saving, it reads the connection's methods and budget and refuses any extra method, no way to pay, no budget, a budget that doesn't renew monthly, or one above the cap. It also refuses a budget below one contribution: NIP-47 reports budgets in millisats, and if a wallet reported sats instead, this makes the check fail closed.
+
+**Two ways to connect.** Alby Hub: Rota opens the Hub's approval page with the limits filled in, and the member approves them there. Any other NWC wallet: the member creates a pay-only connection with the same limit and pastes it. Either way the connection string is kept on the device, encrypted with the PIN like the recovery words, and never reaches Rota's server. After an NWC payment Rota checks the returned preimage against the invoice, as for the built-in wallet.
+
+**Not yet checked with a real wallet:** that `my.albyhub.com/apps/new` is the right approval page for Gregory's Hub, that the Hub reports budgets in millisats, and that it lists only the methods it granted. One small payment through a capped connection will settle all three.
+
 ## 2026-11-14 · Circles, amounts and paying an address
 
 The circle model, price conversion and invoice checks live in `packages/circles` (`@rota/circles`), pure TypeScript that the web app, a seed script or a server can share. `@rota/receipts` stays small, because it's meant to be published on its own.
@@ -69,8 +91,8 @@ Results are recorded here as each check runs.
 | Check | Result | Decision |
 |---|---|---|
 | Breez API key | Received 2026-11-14; kept in a local, git-ignored env file | Where it must live (browser or server) is checked before the wallet is built |
-| Built-in wallet in the browser | Not run | — |
-| NWC pay-only with a cap | Not run | — |
+| Built-in wallet in the browser | Runs on regtest: create, back up, lock and unlock (regtest has no Lightning, so no payment yet) | Breez SDK in the browser; key in a public env variable |
+| NWC pay-only with a cap | Built and refusals tested in the browser; not yet run against a real wallet | Ask for pay-only with a monthly budget; refuse anything wider |
 | M-Pesa payout through `number@bitcoin.co.ke` | Not run | — |
 | Address in the invoice (description hash), bitcoin.co.ke | No hash; the signed description names the address | Check 2 reads the description for this service |
 | Address in the invoice, one other Lightning address | Not run (waits for a wallet) | — |

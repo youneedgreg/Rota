@@ -8,9 +8,11 @@ import {
   generateWords,
   maxFeeSats,
   normalizeWords,
+  openSecret,
   openWords,
   parseSealed,
   preimageOf,
+  sealSecret,
   sealWords,
   type PreparedQuote,
   type SentPayment,
@@ -66,6 +68,13 @@ describe("vault", () => {
     bytes[0] = (bytes[0] ?? 0) ^ 1;
     const tampered = { ...sealed, ciphertext: btoa(String.fromCharCode(...bytes)) };
     await expect(openWords(tampered, "482915")).rejects.toMatchObject({ problem: "locked" });
+  });
+
+  it("seals any secret, such as an NWC connection string", async () => {
+    const secret = "nostr+walletconnect://" + "ab".repeat(32) + "?relay=wss%3A%2F%2Frelay.example.com&secret=" + "cd".repeat(32);
+    const sealed = await sealSecret(secret, "482915", FAST);
+    expect(sealed.ciphertext).not.toContain("walletconnect");
+    expect(await openSecret(sealed, "482915")).toBe(secret);
   });
 
   it("refuses a short PIN", async () => {

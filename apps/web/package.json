@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@breeztech/breez-sdk-spark": "0.28.4",
+    "@getalby/sdk": "9.0.0",
     "@rota/receipts": "workspace:*",
     "@rota/wallet": "workspace:*",
     "next": "16.4.6",

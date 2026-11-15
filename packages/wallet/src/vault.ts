@@ -74,13 +74,21 @@ async function deriveKey(pin: string, salt: Uint8Array, iterations: number): Pro
 }
 
 export async function sealWords(words: string, pin: string, iterations = PBKDF2_ITERATIONS): Promise<SealedWords> {
+  return sealSecret(normalizeWords(words), pin, iterations);
+}
+
+/**
+ * Seals any secret the same way, e.g. an NWC connection string, which can
+ * spend up to its budget and so gets the same protection as the words.
+ */
+export async function sealSecret(secret: string, pin: string, iterations = PBKDF2_ITERATIONS): Promise<SealedWords> {
   checkPin(pin);
-  const normalized = normalizeWords(words);
+  if (secret.length === 0) throw new VaultError("blob", "Nothing to save.");
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveKey(pin, salt, iterations);
   const ciphertext = new Uint8Array(
-    await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(normalized)),
+    await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(secret)),
   );
   return {
     version: 1,
@@ -112,6 +120,10 @@ export function parseSealed(value: unknown): SealedWords {
 }
 
 export async function openWords(sealed: SealedWords, pin: string): Promise<string> {
+  return normalizeWords(await openSecret(sealed, pin));
+}
+
+export async function openSecret(sealed: SealedWords, pin: string): Promise<string> {
   const blob = parseSealed(sealed);
   let plain: ArrayBuffer;
   try {
@@ -125,5 +137,5 @@ export async function openWords(sealed: SealedWords, pin: string): Promise<strin
     // GCM can't tell a wrong PIN from a changed blob; both mean "don't unlock".
     throw new VaultError("locked", "Wrong PIN. Try again.");
   }
-  return normalizeWords(new TextDecoder().decode(plain));
+  return new TextDecoder().decode(plain);
 }
