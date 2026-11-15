@@ -5,7 +5,9 @@ import { checkDraft } from "@rota/records";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createCircle, profileFor } from "@/lib/circles";
-import { button, explain, field, input } from "@/lib/ui";
+import { useT } from "@/lib/lang";
+import type { MessageKey } from "@/lib/messages";
+import { button, field, input } from "@/lib/ui";
 
 type Pace = "demo" | "weekly" | "monthly";
 
@@ -18,6 +20,7 @@ function soon(): Date {
 
 export function NewCircleForm() {
   const router = useRouter();
+  const { t, explain } = useT();
   const [you, setYou] = useState("");
   const [payout, setPayout] = useState("");
   const [name, setName] = useState("");
@@ -29,19 +32,19 @@ export function NewCircleForm() {
   const [roundMinutes, setRoundMinutes] = useState("10");
   const [grace, setGrace] = useState("5");
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState<MessageKey | null>(null);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     const start = startsAt ? new Date(startsAt) : soon();
-    if (Number.isNaN(start.getTime())) return setError("Choose when the first round opens.");
+    if (Number.isNaN(start.getTime())) return setError(t("form.chooseStart"));
     const schedule: Schedule =
       pace === "demo"
         ? { kind: "demo", startsAt: start.toISOString(), roundMinutes: Number(roundMinutes), graceMinutes: Number(grace) }
         : { kind: pace, startsAt: start.toISOString(), graceDays: Number(grace) };
     try {
-      setBusy("Checking your payout address…");
+      setBusy("form.checkingPayout");
       const organizer = await profileFor(you, payout);
       const draft = checkDraft({
         name,
@@ -51,7 +54,7 @@ export function NewCircleForm() {
         schedule,
         organizer,
       });
-      setBusy("Saving the circle…");
+      setBusy("form.saving");
       const invite = await createCircle(draft);
       router.push(`/circle#${invite}`);
     } catch (err) {
@@ -63,37 +66,36 @@ export function NewCircleForm() {
   return (
     <form onSubmit={submit} className="space-y-6">
       <fieldset className="space-y-4">
-        <legend className="text-xl font-medium">You</legend>
+        <legend className="text-xl font-medium">{t("form.you")}</legend>
         <label className={field}>
-          <span>Your name</span>
+          <span>{t("form.yourName")}</span>
           <input className={input} value={you} onChange={(e) => setYou(e.target.value)} maxLength={40} required />
         </label>
         <label className={field}>
-          <span>Where you get paid</span>
+          <span>{t("form.payout")}</span>
           <input
             className={input}
             value={payout}
             onChange={(e) => setPayout(e.target.value)}
-            placeholder="M-Pesa number (07…) or Lightning address"
+            placeholder={t("form.payoutPlaceholder")}
             autoComplete="off"
             required
           />
           <span className="text-sm opacity-70">
-            An M-Pesa number receives shillings through bitcoin.co.ke. Rota checks the address now with an unpaid
-            invoice; nothing is paid.
+            {t("form.payoutHelp")}
           </span>
         </label>
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-xl font-medium">The circle</legend>
+        <legend className="text-xl font-medium">{t("form.circle")}</legend>
         <label className={field}>
-          <span>Circle name</span>
+          <span>{t("form.circleName")}</span>
           <input className={input} value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required />
         </label>
         <div className="grid grid-cols-2 gap-4">
           <label className={field}>
-            <span>Each pays</span>
+            <span>{t("form.eachPays")}</span>
             <input
               className={input}
               inputMode="numeric"
@@ -103,7 +105,7 @@ export function NewCircleForm() {
             />
           </label>
           <label className={field}>
-            <span>Currency</span>
+            <span>{t("form.currency")}</span>
             <select className={input} value={currency} onChange={(e) => setCurrency(e.target.value as Currency)}>
               {CURRENCIES.map((c) => (
                 <option key={c}>{c}</option>
@@ -112,7 +114,7 @@ export function NewCircleForm() {
           </label>
         </div>
         <label className={field}>
-          <span>Members, you included</span>
+          <span>{t("form.seats")}</span>
           <input
             className={input}
             inputMode="numeric"
@@ -123,15 +125,15 @@ export function NewCircleForm() {
             required
           />
           <span className="text-sm opacity-70">
-            {MIN_MEMBERS} to {MAX_MEMBERS}. Seats fill in the order people join, and payouts follow the seats.
+            {t("form.seatsHelp", { min: MIN_MEMBERS, max: MAX_MEMBERS })}
           </span>
         </label>
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-xl font-medium">Rounds</legend>
+        <legend className="text-xl font-medium">{t("form.rounds")}</legend>
         <label className={field}>
-          <span>A new round every</span>
+          <span>{t("form.pace")}</span>
           <select
             className={input}
             value={pace}
@@ -141,25 +143,25 @@ export function NewCircleForm() {
               setGrace(next === "demo" ? "5" : next === "weekly" ? "2" : "5");
             }}
           >
-            <option value="demo">few minutes (demo)</option>
-            <option value="weekly">week</option>
-            <option value="monthly">month</option>
+            <option value="demo">{t("form.pace.demo")}</option>
+            <option value="weekly">{t("form.pace.weekly")}</option>
+            <option value="monthly">{t("form.pace.monthly")}</option>
           </select>
         </label>
         <label className={field}>
-          <span>First round opens</span>
+          <span>{t("form.firstRound")}</span>
           <input className={input} type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-          <span className="text-sm opacity-70">Leave empty to open it five minutes after you start the circle.</span>
+          <span className="text-sm opacity-70">{t("form.firstRoundHelp")}</span>
         </label>
         <div className="grid grid-cols-2 gap-4">
           {pace === "demo" && (
             <label className={field}>
-              <span>Round length (minutes)</span>
+              <span>{t("form.roundMinutes")}</span>
               <input className={input} inputMode="numeric" value={roundMinutes} onChange={(e) => setRoundMinutes(e.target.value)} />
             </label>
           )}
           <label className={field}>
-            <span>Late after ({pace === "demo" ? "minutes" : "days"})</span>
+            <span>{t(pace === "demo" ? "form.lateMinutes" : "form.lateDays")}</span>
             <input className={input} inputMode="numeric" value={grace} onChange={(e) => setGrace(e.target.value)} />
           </label>
         </div>
@@ -171,7 +173,7 @@ export function NewCircleForm() {
         </p>
       )}
       <button className={`${button} w-full`} disabled={busy !== null}>
-        {busy ?? "Start the circle"}
+        {t(busy ?? "form.submit")}
       </button>
     </form>
   );

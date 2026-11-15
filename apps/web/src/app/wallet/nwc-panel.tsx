@@ -14,22 +14,20 @@ import {
   payWithConnection,
   savedConnection,
 } from "@/lib/nwc";
+import { useT } from "@/lib/lang";
+import { UiError } from "@/lib/messages";
 
 const button = "min-h-12 rounded-lg bg-foreground px-4 font-medium text-background disabled:opacity-50";
 const secondary = "min-h-12 rounded-lg border border-current px-4 font-medium disabled:opacity-50";
 const input = "min-h-12 w-full rounded-lg border border-current/30 bg-transparent px-3";
 
-function explain(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message;
-  return "Something went wrong. Try again.";
-}
-
 function Limits({ limits }: { limits: ConnectionReport }) {
+  const { t, num } = useT();
   const total = Math.floor((limits.budget.total_budget ?? 0) / 1000);
   const used = Math.floor((limits.budget.used_budget ?? 0) / 1000);
   return (
     <p className="leading-7">
-      Can only pay. Monthly limit {total.toLocaleString()} sats, {used.toLocaleString()} used this month.
+      {t("nwc.limits", { total: num(total), used: num(used) })}
     </p>
   );
 }
@@ -41,15 +39,15 @@ export function NwcPanel() {
   const [state, setState] = useState<"connect" | "locked" | null>(null);
   const [client, setClient] = useState<NWCClient | null>(null);
   const view = client ? "open" : (state ?? (hasConnection === null ? "loading" : hasConnection ? "locked" : "connect"));
+  const { t } = useT();
 
   return (
     <section className="space-y-4 rounded-xl border border-current/20 p-4">
-      <h2 className="text-xl font-medium">Your own wallet</h2>
+      <h2 className="text-xl font-medium">{t("nwc.title")}</h2>
       <p className="leading-7 opacity-80">
-        Connect a wallet you already use (Nostr Wallet Connect). Rota asks for a connection that can only pay, up to one
-        contribution plus 25% a month, and refuses anything wider. Your wallet enforces the limit, not Rota.
+        {t("nwc.intro")}
       </p>
-      {view === "loading" && <p>Loading…</p>}
+      {view === "loading" && <p>{t("common.loading")}</p>}
       {view === "connect" && <Connect onSaved={() => setState("locked")} />}
       {view === "locked" && (
         <Unlock
@@ -83,6 +81,7 @@ function Connect({ onSaved }: { onSaved: () => void }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { t, explain, num } = useT();
 
   const contribution = Number(sats);
   const validAmount = Number.isInteger(contribution) && contribution > 0;
@@ -90,14 +89,14 @@ function Connect({ onSaved }: { onSaved: () => void }) {
   async function run(how: "page" | "paste", e?: FormEvent) {
     e?.preventDefault();
     setError(null);
-    if (!validAmount) return setError("Enter the contribution in whole sats.");
-    if (pin.length < MIN_PIN_LENGTH) return setError(`Choose a PIN of at least ${MIN_PIN_LENGTH} characters.`);
+    if (!validAmount) return setError(t("nwc.enterContribution"));
+    if (pin.length < MIN_PIN_LENGTH) return setError(t("nwc.pinShort", { min: MIN_PIN_LENGTH }));
     setBusy(true);
     try {
       if (how === "page") {
         const expiresAt = new Date(`${until}T23:59:59`);
         if (!until || Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
-          throw new Error("Choose the date the cycle ends; the connection expires then.");
+          throw new UiError("nwc.chooseEnd");
         }
         await connectWithApprovalPage({ approvalPage: page, contributionSats: contribution, expiresAt, pin });
       } else {
@@ -115,35 +114,35 @@ function Connect({ onSaved }: { onSaved: () => void }) {
   return (
     <form onSubmit={(e) => run("paste", e)} className="space-y-4">
       <label className="block space-y-2">
-        <span>Contribution in sats</span>
+        <span>{t("nwc.contribution")}</span>
         <input className={input} inputMode="numeric" value={sats} onChange={(e) => setSats(e.target.value)} />
       </label>
-      {validAmount && <p className="opacity-80">Monthly limit Rota will ask for: {capSats(contribution).toLocaleString()} sats.</p>}
+      {validAmount && <p className="opacity-80">{t("nwc.capNote", { cap: num(capSats(contribution)) })}</p>}
       <label className="block space-y-2">
-        <span>PIN to lock this connection on this device</span>
+        <span>{t("nwc.pinLock")}</span>
         <input className={input} type="password" value={pin} onChange={(e) => setPin(e.target.value)} autoComplete="new-password" />
       </label>
       <fieldset className="space-y-3 rounded-lg border border-current/20 p-3">
         <legend className="px-1 font-medium">Alby Hub</legend>
         <label className="block space-y-2">
-          <span>Cycle ends on</span>
+          <span>{t("nwc.cycleEnds")}</span>
           <input className={input} type="date" value={until} onChange={(e) => setUntil(e.target.value)} />
         </label>
         <label className="block space-y-2">
-          <span>Your Hub&apos;s approval page</span>
+          <span>{t("nwc.approvalPage")}</span>
           <input className={input} value={page} onChange={(e) => setPage(e.target.value)} autoCapitalize="none" spellCheck={false} />
         </label>
         <button type="button" className={button} disabled={busy} onClick={() => run("page")}>
-          {busy ? "Waiting for your wallet…" : "Connect Alby Hub"}
+          {t(busy ? "nwc.waiting" : "nwc.connectAlby")}
         </button>
       </fieldset>
       <fieldset className="space-y-3 rounded-lg border border-current/20 p-3">
-        <legend className="px-1 font-medium">Any other wallet</legend>
+        <legend className="px-1 font-medium">{t("nwc.other")}</legend>
         <p className="opacity-80">
-          In your wallet, create a connection that can only pay, with a monthly limit of the amount above, then paste it here.
+          {t("nwc.otherText")}
         </p>
         <label className="block space-y-2">
-          <span>Wallet connection</span>
+          <span>{t("nwc.connection")}</span>
           <textarea
             className={`${input} min-h-24 py-2 font-mono text-sm`}
             value={connection}
@@ -154,7 +153,7 @@ function Connect({ onSaved }: { onSaved: () => void }) {
           />
         </label>
         <button type="submit" className={secondary} disabled={busy || !connection.trim()}>
-          Check and save
+          {t("nwc.checkSave")}
         </button>
       </fieldset>
       {error && (
@@ -170,6 +169,7 @@ function Unlock({ onOpen, onForget }: { onOpen: (client: NWCClient) => void; onF
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { t, explain } = useT();
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -184,9 +184,9 @@ function Unlock({ onOpen, onForget }: { onOpen: (client: NWCClient) => void; onF
   }
   return (
     <form onSubmit={submit} className="space-y-4">
-      <p>A wallet is connected on this device.</p>
+      <p>{t("nwc.connectedDevice")}</p>
       <label className="block space-y-2">
-        <span>PIN</span>
+        <span>{t("common.pin")}</span>
         <input className={input} type="password" value={pin} onChange={(e) => setPin(e.target.value)} autoComplete="current-password" />
       </label>
       {error && (
@@ -196,14 +196,14 @@ function Unlock({ onOpen, onForget }: { onOpen: (client: NWCClient) => void; onF
       )}
       <div className="flex flex-wrap gap-3">
         <button type="submit" className={button} disabled={busy}>
-          {busy ? "Unlocking…" : "Unlock"}
+          {t(busy ? "common.unlocking" : "common.unlock")}
         </button>
         <button
           type="button"
           className={secondary}
-          onClick={() => window.confirm("Remove this connection from this device? Also revoke it in your wallet.") && onForget()}
+          onClick={() => window.confirm(t("nwc.removeConfirm")) && onForget()}
         >
-          Remove connection
+          {t("nwc.remove")}
         </button>
       </div>
     </form>
@@ -216,6 +216,7 @@ function Connected({ client, onClose }: { client: NWCClient; onClose: () => void
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { t, explain, num } = useT();
 
   async function check() {
     setError(null);
@@ -233,16 +234,16 @@ function Connected({ client, onClose }: { client: NWCClient; onClose: () => void
     try {
       const invoice = text.trim().replace(/^lightning:/i, "");
       const decoded = decodeInvoice(invoice);
-      if (decoded.amountMsat === null) throw new Error("This invoice has no amount. Ask for one with an amount.");
+      if (decoded.amountMsat === null) throw new UiError("wallet.noAmount");
       const sats = decoded.amountMsat / 1000n;
-      if (!window.confirm(`Pay ${sats.toLocaleString()} sats from your own wallet?`)) return;
+      if (!window.confirm(t("nwc.confirmPay", { sats: num(sats) }))) return;
       setBusy(true);
       const paid = await payWithConnection(client, {
         invoice,
         amountMsat: decoded.amountMsat,
         paymentHash: decoded.paymentHash,
       });
-      setResult(`Paid ${sats.toLocaleString()} sats (fee ${paid.feeSats} sats). Proof of payment received.`);
+      setResult(t("wallet.paidResult", { sats: num(sats), fee: num(paid.feeSats) }));
       setText("");
     } catch (err) {
       setError(explain(err));
@@ -253,18 +254,18 @@ function Connected({ client, onClose }: { client: NWCClient; onClose: () => void
 
   return (
     <div className="space-y-4">
-      {limits ? <Limits limits={limits} /> : <p>Connected.</p>}
+      {limits ? <Limits limits={limits} /> : <p>{t("nwc.connected")}</p>}
       <div className="flex flex-wrap gap-3">
         <button className={secondary} onClick={check}>
-          Check limits
+          {t("nwc.checkLimits")}
         </button>
         <button className={secondary} onClick={onClose}>
-          Lock
+          {t("nwc.lock")}
         </button>
       </div>
       <form onSubmit={pay} className="space-y-4">
         <label className="block space-y-2">
-          <span>Lightning invoice to pay</span>
+          <span>{t("nwc.invoiceToPay")}</span>
           <textarea
             className={`${input} min-h-24 py-2 font-mono text-sm`}
             value={text}
@@ -285,7 +286,7 @@ function Connected({ client, onClose }: { client: NWCClient; onClose: () => void
           </p>
         )}
         <button type="submit" className={button} disabled={busy || !text.trim()}>
-          {busy ? "Paying…" : "Pay from my wallet"}
+          {t(busy ? "common.paying" : "nwc.payFromMine")}
         </button>
       </form>
     </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { savedCircles, type SavedCircle } from "@/lib/circles";
+import { T } from "@/lib/lang";
 
 const noSubscribe = () => () => {};
 let cache: { raw: string | null; list: SavedCircle[] } = { raw: null, list: [] };
@@ -20,7 +21,7 @@ export function MyCircles() {
   return (
     <section aria-labelledby="mine" className="space-y-2">
       <h2 id="mine" className="font-medium">
-        Your circles on this device
+        <T k="mine.title" />
       </h2>
       <ul className="space-y-2">
         {circles.map((c) => (
