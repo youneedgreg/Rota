@@ -1,0 +1,27 @@
+{
+  "name": "@rota/records",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Rota's payment records on Nostr: one signed, NIP-44 encrypted receipt event per payment, published to the circle's relay and verified on each member's device.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "eslint": "^9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "@rota/receipts": "workspace:*",
+    "nostr-tools": "2.25.4"
+  }
+}
