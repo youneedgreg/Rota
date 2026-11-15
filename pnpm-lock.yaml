@@ -16,9 +16,18 @@ importers:
       '@getalby/sdk':
         specifier: 9.0.0
         version: 9.0.0(typescript@6.0.3)
+      '@noble/hashes':
+        specifier: 2.4.0
+        version: 2.4.0
+      '@rota/circles':
+        specifier: workspace:*
+        version: link:../../packages/circles
       '@rota/receipts':
         specifier: workspace:*
         version: link:../../packages/receipts
+      '@rota/records':
+        specifier: workspace:*
+        version: link:../../packages/records
       '@rota/wallet':
         specifier: workspace:*
         version: link:../../packages/wallet
