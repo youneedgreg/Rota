@@ -36,3 +36,4 @@ export {
   type MemberProfile,
 } from "./circle-events";
 export { fetchCircle, fetchEvents, fetchReceipts, publishEvent, publishReceipt } from "./relay";
+export { roundContext, roundView, type CheckedReceipt, type RoundView } from "./round";
