@@ -13,7 +13,10 @@
   "dependencies": {
     "@breeztech/breez-sdk-spark": "0.28.4",
     "@getalby/sdk": "9.0.0",
+    "@noble/hashes": "2.4.0",
+    "@rota/circles": "workspace:*",
     "@rota/receipts": "workspace:*",
+    "@rota/records": "workspace:*",
     "@rota/wallet": "workspace:*",
     "next": "16.4.6",
     "react": "19.3.0",

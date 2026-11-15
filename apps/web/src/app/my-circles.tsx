@@ -1,0 +1,36 @@
+"use client";
+
+import Link from "next/link";
+import { useSyncExternalStore } from "react";
+import { savedCircles, type SavedCircle } from "@/lib/circles";
+
+const noSubscribe = () => () => {};
+let cache: { raw: string | null; list: SavedCircle[] } = { raw: null, list: [] };
+
+/** The saved list, re-read only when storage changes, so React gets a stable value. */
+function snapshot(): SavedCircle[] {
+  const raw = localStorage.getItem("rota.circles.v1");
+  if (raw !== cache.raw) cache = { raw, list: savedCircles() };
+  return cache.list;
+}
+
+export function MyCircles() {
+  const circles = useSyncExternalStore(noSubscribe, snapshot, () => null);
+  if (!circles || circles.length === 0) return null;
+  return (
+    <section aria-labelledby="mine" className="space-y-2">
+      <h2 id="mine" className="font-medium">
+        Your circles on this device
+      </h2>
+      <ul className="space-y-2">
+        {circles.map((c) => (
+          <li key={c.invite}>
+            <Link className="underline" href={`/circle#${c.invite}`}>
+              {c.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}

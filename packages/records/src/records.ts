@@ -4,6 +4,7 @@
 import { decodeInvoice, verifyReceipt, type CheckResult } from "@rota/receipts";
 import { getConversationKey, decrypt, encrypt } from "nostr-tools/nip44";
 import { finalizeEvent, generateSecretKey, getPublicKey, verifyEvent, type Event } from "nostr-tools/pure";
+import { HEX_32, isEventShape, MAX_CONTENT_LENGTH, plainEvent, tagValue } from "./event";
 
 /**
  * Rota's payment record: a regular (not replaceable) event, so a receipt can't
@@ -13,11 +14,6 @@ export const RECEIPT_KIND = 3570;
 
 /** Version of the encrypted content's shape. */
 const CONTENT_VERSION = 1;
-
-/** Largest encrypted content Rota will try to decrypt (NIP-44 allows up to ~87 KB). */
-const MAX_CONTENT_LENGTH = 16_000;
-
-const HEX_32 = /^[0-9a-f]{64}$/;
 
 /**
  * A circle's key pair. The secret travels in the invite link, so every member
@@ -149,38 +145,6 @@ export interface ReceiptEventResult {
   content?: ReceiptContent;
   /** The invoice's payment hash, when it could be read; used to spot two members claiming one payment. */
   paymentHash?: string;
-}
-
-function tagValue(event: Event, name: string): string | undefined {
-  return event.tags.find((t) => Array.isArray(t) && t[0] === name)?.[1];
-}
-
-/** Copies only the signed fields, so no cached "verified" flag or extra field rides along. */
-function plainEvent(event: Event): Event {
-  return {
-    id: event.id,
-    pubkey: event.pubkey,
-    created_at: event.created_at,
-    kind: event.kind,
-    tags: event.tags,
-    content: event.content,
-    sig: event.sig,
-  };
-}
-
-function isEventShape(value: unknown): value is Event {
-  if (typeof value !== "object" || value === null) return false;
-  const e = value as Record<string, unknown>;
-  return (
-    typeof e.id === "string" &&
-    typeof e.pubkey === "string" &&
-    typeof e.sig === "string" &&
-    typeof e.content === "string" &&
-    typeof e.kind === "number" &&
-    typeof e.created_at === "number" &&
-    Array.isArray(e.tags) &&
-    e.tags.every((t) => Array.isArray(t) && t.every((s) => typeof s === "string"))
-  );
 }
 
 function parseContent(text: string): ReceiptContent | null {

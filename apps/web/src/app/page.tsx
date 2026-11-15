@@ -1,4 +1,6 @@
 import { RECEIPT_CHECKS } from "@rota/receipts";
+import Link from "next/link";
+import { MyCircles } from "./my-circles";
 
 const CHECK_LABELS: Record<(typeof RECEIPT_CHECKS)[number], string> = {
   paid: "It was paid",
@@ -16,6 +18,18 @@ export default function Home() {
         recipient directly over Lightning, and every payment leaves a receipt
         nobody can fake.
       </p>
+      <div className="flex flex-wrap gap-3">
+        <Link
+          href="/circles/new"
+          className="inline-flex min-h-12 items-center rounded-lg bg-foreground px-4 font-medium text-background"
+        >
+          Start a circle
+        </Link>
+        <Link href="/wallet" className="inline-flex min-h-12 items-center rounded-lg border border-current px-4 font-medium">
+          Wallet
+        </Link>
+      </div>
+      <MyCircles />
       <section aria-labelledby="checks">
         <h2 id="checks" className="mb-2 font-medium">
           Every receipt passes four checks

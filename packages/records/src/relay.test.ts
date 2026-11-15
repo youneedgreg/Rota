@@ -2,8 +2,9 @@
 // (start it with `docker compose up relay`). Skipped in CI.
 import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "@rota/receipts/testing";
 import { describe, expect, it } from "vitest";
+import { assembleCircle, createCircleEvent, createJoinEvent, createRosterEvent, decodeInvite, encodeInvite } from "./circle-events";
 import { createReceiptEvent, newCircleSecret, newMemberSecret, publicKeyOf, roundClaims, verifyReceiptEvent } from "./records";
-import { fetchReceipts, publishReceipt } from "./relay";
+import { fetchCircle, fetchReceipts, publishEvent, publishReceipt } from "./relay";
 
 const RELAY = process.env.ROTA_TEST_RELAY;
 
@@ -47,6 +48,49 @@ describe.skipIf(!RELAY)("receipts on a real relay", () => {
     const result = verifyReceiptEvent(events[0], ctx);
     expect(result.ok).toBe(true);
     expect(roundClaims([result]).get(publicKeyOf(member))).toBe("paid");
+  });
+
+  it("creates a circle, fills its seats, seals it and reads it back", async () => {
+    const url = RELAY as string;
+    const node = nodeKeyOf(testKey("relay test node"));
+    const circleSecret = newCircleSecret();
+    const [organizer, bob, carol] = [newMemberSecret(), newMemberSecret(), newMemberSecret()];
+    const profile = (name: string, payoutAddress: string) => ({ name, payoutAddress, knownNodeKeys: [node] });
+    const t = Math.floor(Date.now() / 1000);
+
+    const definition = createCircleEvent({
+      organizerSecret: organizer,
+      circleSecret,
+      createdAt: t,
+      draft: {
+        name: "Relay test circle",
+        currency: "KES",
+        contribution: 15,
+        seats: 3,
+        schedule: { kind: "demo", startsAt: new Date().toISOString(), roundMinutes: 10, graceMinutes: 5 },
+        organizer: profile("Amina", "amina@example.com"),
+      },
+    });
+    const invite = decodeInvite(encodeInvite(circleSecret, definition.id));
+    if (!invite) throw new Error("invite didn't decode");
+    await publishEvent(url, definition);
+    for (const [secret, who, at] of [
+      [bob, profile("Bakari", "bakari@example.org"), t + 1],
+      [carol, profile("Chiku", "0712345678@bitcoin.co.ke"), t + 2],
+    ] as const) {
+      await publishEvent(url, createJoinEvent({ memberSecret: secret, ...invite, profile: who, createdAt: at }));
+    }
+
+    const circle = publicKeyOf(circleSecret);
+    const before = assembleCircle({ ...invite, events: await fetchCircle(url, circle) });
+    expect(before?.full).toBe(true);
+    expect(before?.sealed).toBe(false);
+
+    const members = before?.members.map((m) => m.pubkey) ?? [];
+    await publishEvent(url, createRosterEvent({ organizerSecret: organizer, ...invite, members, createdAt: t + 3 }));
+    const after = assembleCircle({ ...invite, events: await fetchCircle(url, circle) });
+    expect(after?.sealed).toBe(true);
+    expect(after?.members.map((m) => m.name)).toEqual(["Amina", "Bakari", "Chiku"]);
   });
 });
 
