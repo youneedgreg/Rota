@@ -4,8 +4,10 @@ export {
   VaultError,
   generateWords,
   normalizeWords,
+  openSecret,
   openWords,
   parseSealed,
+  sealSecret,
   sealWords,
   type SealedWords,
 } from "./vault";
