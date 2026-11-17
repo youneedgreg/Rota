@@ -34,7 +34,7 @@ pnpm build
 
 The relay test in `packages/records` runs only against a local relay: start it with `docker compose up -d relay`, then run `ROTA_TEST_RELAY=ws://127.0.0.1:7777 pnpm --filter @rota/records test`.
 
-Decisions and their reasons are in [DECISIONS.md](DECISIONS.md).
+Decisions and their reasons are in [DECISIONS.md](DECISIONS.md). What Rota protects against, and what it doesn't yet, is in [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## License
 

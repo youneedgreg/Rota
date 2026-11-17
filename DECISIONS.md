@@ -2,6 +2,18 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-18 · Security pass
+
+**The threat model is written down in [THREAT_MODEL.md](THREAT_MODEL.md),** with the code behind each defence and the gaps in order of risk. The main finding: the "one contribution a month, nothing else" claim holds for NWC connections only. A compromised web host could serve code that reads the built-in wallet when the member types their PIN. The advice for now is to keep about one contribution in the built-in wallet.
+
+**Error reports go to Sentry, off unless a DSN is set, and scrubbed on the phone.** Only the browser SDK (`@sentry/browser` 11.10.0) is used; Rota has no server code to watch. It loads only when `NEXT_PUBLIC_SENTRY_DSN` is set, with Sentry's default integrations off: no breadcrumbs (they record clicks and URLs), no tracing, no session replay. Before a report leaves, `scrubReport` drops the request, breadcrumbs, user and extra data, removes everything after `#` or `?` in any URL (invite secrets live after `#`), and blanks invoices, NWC strings, `nsec` keys, Lightning and e-mail addresses, phone numbers and long hex. Sentry's own server-side scrubbing should be on as well. The DSN is public by design: it can only send reports.
+
+**Security headers, with a Content-Security-Policy that has no nonce.** The pages are pre-rendered static files, and a nonce needs a server rendering every request, so scripts are limited to Rota's own origin plus `'unsafe-inline'` for Next's inline bootstrap. `'wasm-unsafe-eval'` lets the Breez SDK compile its WebAssembly; plain `eval` is blocked in production. `connect-src` allows any `https:` and `wss:` host because members pay arbitrary Lightning addresses and may use any relay; plain `http:` is blocked, except the local relay in development. The page can't be framed, and the camera, microphone, location, payment and USB APIs are off. Checked on a production build: the built-in wallet starts, creates an invoice and checks a pasted one, the price API and relay connect, and no violations are reported. What would change it: a server-rendered host, which would allow a nonce in place of `'unsafe-inline'`.
+
+**LNURL requests go to public host names only.** A circle's addresses come from other members, so a hostile address could point a member's browser at their router or another local service. `payParamsUrl` refuses an address that isn't already in its normal form, and every callback and verify URL must be HTTPS to a public DNS name: no IP addresses, no login in the URL, and no `localhost`, `.local`, `.internal`, `.lan`, `.home` or `.arpa` names.
+
+**Track-record files have size limits:** at most 50 circles and 100 receipts per circle, a name of 80 characters, a currency of 8, and a positive contribution. A larger file is refused before any receipt is checked.
+
 ## 2026-11-18 · Track records
 
 **A member's track record is one file, signed with their key (kind 3575), that anyone can check without Rota.** It holds the member's original receipt events, exactly as they published them, and for each circle the NIP-44 conversation key between the member and the circle. That key opens this member's messages to the circle and no one else's, because every member's key is different. So a reader checks the member's signature from the day they paid, opens each receipt, and runs the four checks in their own browser. Nothing is uploaded, and no relay or circle secret is needed. The code is `track-record.ts` in `@rota/records` and the `/track-record` page.
