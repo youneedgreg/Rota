@@ -48,8 +48,22 @@ describe("checkConnection", () => {
     expect(problem({ ...good, methods: ["pay_invoice"] })).toBeUndefined();
   });
 
+  it("accepts Alby Hub's send-payments bundle (keysend and multi-pay under the same budget)", () => {
+    // What a desktop Alby Hub 1.24.6 connection reported on 15 Nov 2026 with
+    // only "Read your node info" and "Send payments" ticked.
+    const albyHub = ["pay_invoice", "pay_keysend", "multi_pay_invoice", "multi_pay_keysend", "get_info", "get_budget"];
+    expect(problem({ ...good, methods: albyHub })).toBeUndefined();
+  });
+
+  it("still refuses keysend without pay_invoice", () => {
+    expect(problem({ ...good, methods: ["pay_keysend", "get_info", "get_budget"] })).toBe("no-pay");
+  });
+
   it.each<[string, ConnectionReport, string]>([
     ["extra methods", { ...good, methods: [...good.methods, "list_transactions"] }, "methods"],
+    ["the balance", { ...good, methods: [...good.methods, "get_balance"] }, "methods"],
+    ["making invoices", { ...good, methods: [...good.methods, "make_invoice"] }, "methods"],
+    ["signing messages", { ...good, methods: [...good.methods, "sign_message"] }, "methods"],
     ["no pay method", { ...good, methods: ["get_info", "get_budget"] }, "no-pay"],
     ["no budget reported", { ...good, budget: {} }, "no-budget"],
     ["a zero budget", { ...good, budget: { ...good.budget, total_budget: 0 } }, "no-budget"],
