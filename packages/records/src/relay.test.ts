@@ -4,7 +4,8 @@ import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage
 import { describe, expect, it } from "vitest";
 import { assembleCircle, createCircleEvent, createJoinEvent, createRosterEvent, decodeInvite, encodeInvite } from "./circle-events";
 import { createReceiptEvent, newCircleSecret, newMemberSecret, publicKeyOf, roundClaims, verifyReceiptEvent } from "./records";
-import { fetchCircle, fetchReceipts, publishEvent, publishReceipt } from "./relay";
+import { createReceivedEvent, readSettlements } from "./received";
+import { fetchCircle, fetchReceipts, fetchRound, publishEvent, publishReceipt } from "./relay";
 
 const RELAY = process.env.ROTA_TEST_RELAY;
 
@@ -48,6 +49,22 @@ describe.skipIf(!RELAY)("receipts on a real relay", () => {
     const result = verifyReceiptEvent(events[0], ctx);
     expect(result.ok).toBe(true);
     expect(roundClaims([result]).get(publicKeyOf(member))).toBe("paid");
+  });
+
+  it("reads one round's receipts and the recipient's record together", async () => {
+    const url = RELAY as string;
+    const circleSecret = newCircleSecret();
+    const recipient = newMemberSecret();
+    const settled = [{ paymentHash: "a".repeat(64), member: publicKeyOf(newMemberSecret()) }];
+    const forRound = (round: number) => createReceivedEvent({ recipientSecret: recipient, circleSecret, round, settled });
+    const [one, two] = [forRound(1), forRound(2)];
+    await publishEvent(url, one);
+    await publishEvent(url, two);
+
+    const events = await fetchRound(url, publicKeyOf(circleSecret), 2);
+    expect(events.map((e) => e.id)).toEqual([two.id]);
+    const read = readSettlements(events, { circleSecret, round: 2, recipient: publicKeyOf(recipient) });
+    expect(read.get("a".repeat(64))).toBe(settled[0]?.member);
   });
 
   it("creates a circle, fills its seats, seals it and reads it back", async () => {

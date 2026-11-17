@@ -295,16 +295,16 @@ export function verifyReceiptEvent(input: unknown, context: CircleContext): Rece
   return { ok: member.ok && result.ok, member, checks: result.checks, content, paymentHash };
 }
 
-export type RoundClaim = "paid" | "disputed";
-
 /**
- * Who paid a round, from receipts that already passed `verifyReceiptEvent`.
- * Every member can decrypt every receipt, so a member could copy someone
- * else's invoice and preimage into a receipt of their own. One payment can
- * only count once: when two members claim the same payment hash, both are
- * marked disputed until the recipient's "received" record settles it.
+ * "paid": a passing receipt for a payment nobody else claims, or one the
+ * recipient settled in this member's favour. "disputed": another member claims
+ * the same payment and the recipient hasn't settled it. "not-counted": the
+ * recipient settled that payment for someone else.
  */
-export function roundClaims(results: readonly ReceiptEventResult[]): Map<string, RoundClaim> {
+export type RoundClaim = "paid" | "disputed" | "not-counted";
+
+/** Who claims each payment, from receipts that passed every check. */
+export function claimantsByPayment(results: readonly ReceiptEventResult[]): Map<string, Set<string>> {
   const byHash = new Map<string, Set<string>>();
   for (const r of results) {
     if (!r.ok || !r.paymentHash) continue;
@@ -312,11 +312,35 @@ export function roundClaims(results: readonly ReceiptEventResult[]): Map<string,
     claimants.add(r.member.pubkey);
     byHash.set(r.paymentHash, claimants);
   }
+  return byHash;
+}
+
+const CLAIM_WEIGHT: Record<RoundClaim, number> = { "not-counted": 0, paid: 1, disputed: 2 };
+
+/**
+ * Who paid a round, from receipts that already passed `verifyReceiptEvent`.
+ * Every member can decrypt every receipt, so a member could copy someone
+ * else's invoice and preimage into a receipt of their own. One payment can
+ * only count once: when two members claim the same payment hash, both are
+ * disputed until the recipient's "received" record (`settled`: payment hash →
+ * member) names one of them. A settlement for a payment only one member
+ * claims, or naming someone who doesn't claim it, changes nothing.
+ */
+export function roundClaims(
+  results: readonly ReceiptEventResult[],
+  settled: ReadonlyMap<string, string> = new Map(),
+): Map<string, RoundClaim> {
   const claims = new Map<string, RoundClaim>();
-  for (const claimants of byHash.values()) {
+  const raise = (pubkey: string, claim: RoundClaim) => {
+    const before = claims.get(pubkey);
+    if (before === undefined || CLAIM_WEIGHT[claim] > CLAIM_WEIGHT[before]) claims.set(pubkey, claim);
+  };
+  for (const [hash, claimants] of claimantsByPayment(results)) {
+    const winner = settled.get(hash);
     for (const pubkey of claimants) {
-      if (claimants.size > 1) claims.set(pubkey, "disputed");
-      else if (claims.get(pubkey) !== "disputed") claims.set(pubkey, "paid");
+      if (claimants.size === 1) raise(pubkey, "paid");
+      else if (winner === undefined || !claimants.has(winner)) raise(pubkey, "disputed");
+      else raise(pubkey, pubkey === winner ? "paid" : "not-counted");
     }
   }
   return claims;

@@ -5,6 +5,7 @@ import type { Event } from "nostr-tools/pure";
 import { Relay } from "nostr-tools/relay";
 import { CIRCLE_KIND, JOIN_KIND, ROSTER_KIND } from "./circle-events";
 import { RECEIPT_KIND } from "./records";
+import { RECEIVED_KIND } from "./received";
 
 const DEFAULT_TIMEOUT_MS = 8_000;
 
@@ -72,6 +73,16 @@ export async function fetchReceipts(
   if (options.round === undefined) return events;
   const round = String(options.round);
   return events.filter((event) => event.tags.some((t) => t[0] === "round" && t[1] === round));
+}
+
+/**
+ * Reads one round's receipts and the recipient's "received" records. Pass
+ * them to `roundView`, which checks every one: the relay is not trusted.
+ */
+export async function fetchRound(relayUrl: string, circle: string, round: number, timeoutMs?: number): Promise<Event[]> {
+  // Relays index single-letter tags only, so the round is picked out here.
+  const events = await fetchEvents(relayUrl, { kinds: [RECEIPT_KIND, RECEIVED_KIND], "#p": [circle] }, timeoutMs);
+  return events.filter((event) => event.tags.some((t) => t[0] === "round" && t[1] === String(round)));
 }
 
 /** Reads a circle's definition, joins and roster. Pass them to `assembleCircle`. */
