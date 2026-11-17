@@ -14,6 +14,16 @@ export const NWC_METHODS = ["pay_invoice", "get_info", "get_budget"] as const;
 export type NwcMethod = (typeof NWC_METHODS)[number];
 
 /**
+ * Other ways to pay that a wallet may grant together with pay_invoice. Alby
+ * Hub has one "send payments" permission that grants all four, and checks the
+ * same monthly budget before each of them (getAlby/hub,
+ * nip47/permissions/permissions.go and transactions/transactions_service.go
+ * `validateCanPay`, read 15 Nov 2026). They add no power beyond pay_invoice,
+ * which can already pay anyone, so Rota accepts them; it never calls them.
+ */
+export const NWC_ALSO_ACCEPTED = ["pay_keysend", "multi_pay_invoice", "multi_pay_keysend"] as const;
+
+/**
  * Headroom over today's contribution, for bitcoin price moves and routing
  * fees during the cycle. Rota's own choice: covers about a 20% price drop.
  * A fully compromised Rota could take at most 1.25 contributions a month.
@@ -72,7 +82,8 @@ export class NwcPolicyError extends Error {
  * and is refused, never accepted as a smaller budget than it really is.
  */
 export function checkConnection(report: ConnectionReport, contributionSats: number): void {
-  const extra = report.methods.filter((m) => !(NWC_METHODS as readonly string[]).includes(m));
+  const accepted: readonly string[] = [...NWC_METHODS, ...NWC_ALSO_ACCEPTED];
+  const extra = report.methods.filter((m) => !accepted.includes(m));
   if (extra.length > 0) {
     throw new NwcPolicyError(
       "methods",
