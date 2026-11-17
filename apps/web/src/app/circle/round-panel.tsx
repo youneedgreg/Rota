@@ -1,10 +1,10 @@
 "use client";
 
 import { currentRound, getRound, roundCount, type PayerStatus } from "@rota/circles";
-import type { CheckedReceipt, CircleView, RoundView } from "@rota/records";
+import type { CheckedReceipt, CircleView, Dispute, RoundView } from "@rota/records";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type FormEvent } from "react";
-import { loadRound, payRound, sendUnsent, type PaidRound } from "@/lib/rounds";
+import { loadRound, payRound, sendUnsent, settleRound, type PaidRound } from "@/lib/rounds";
 import { walletsOnDevice } from "@/lib/storage-keys";
 import { useT } from "@/lib/lang";
 import type { MessageKey } from "@/lib/messages";
@@ -110,7 +110,8 @@ function Round({
 
   if (!round) return <p role="status">{error ? t(error) : t("round.loading", { n: number })}</p>;
 
-  const { status, recipient, disputed, receipts } = round;
+  const { status, recipient, disputed, notCounted, settledFor, disputes, receipts } = round;
+  const names = new Map(view.members.map((m) => [m.pubkey, m.name]));
   const mine = status.payers.find((p) => p.member.id === me);
   const noPrice = receipts.some((r) => r.checks.some((c) => c.check === "amount" && /no price/.test(c.detail)));
   const { currency, contribution } = view.draft;
@@ -138,7 +139,12 @@ function Round({
                 {p.member.name}
                 {p.member.id === me && t("circle.you")}
               </span>
-              <StateBadge payer={p} disputed={disputed.has(p.member.id)} />
+              <StateBadge
+                payer={p}
+                disputed={disputed.has(p.member.id)}
+                notCounted={notCounted.has(p.member.id)}
+                settled={settledFor.has(p.member.id)}
+              />
             </li>
           ))}
         </ul>
@@ -160,12 +166,26 @@ function Round({
         />
       )}
 
+      {recipient.pubkey === me && disputes.length > 0 && (
+        <Settle invite={invite} view={view} number={number} disputes={disputes} receipts={receipts} names={names} onSaved={refresh} />
+      )}
+
       <Receipts receipts={receipts} />
     </>
   );
 }
 
-function StateBadge({ payer, disputed }: { payer: PayerStatus; disputed: boolean }) {
+function StateBadge({
+  payer,
+  disputed,
+  notCounted,
+  settled,
+}: {
+  payer: PayerStatus;
+  disputed: boolean;
+  notCounted: boolean;
+  settled: boolean;
+}) {
   const { t, when } = useT();
   if (disputed) return <span className="font-medium">{t("state.disputed")}</span>;
   if (payer.state === "paid") {
@@ -174,10 +194,111 @@ function StateBadge({ payer, disputed }: { payer: PayerStatus; disputed: boolean
         <span className="font-medium">{t("state.paid")}</span>
         {payer.onTime === false && t("state.paidLate")}
         {payer.paidAt && <span className="block text-sm opacity-70">{when(payer.paidAt)}</span>}
+        {settled && <span className="block text-sm opacity-70">{t("state.settledNote")}</span>}
       </span>
     );
   }
-  return <span className={payer.state === "late" ? "font-medium" : "opacity-70"}>{t(payer.state === "late" ? "state.late" : "state.pending")}</span>;
+  return (
+    <span className="text-right">
+      <span className={payer.state === "late" ? "font-medium" : "opacity-70"}>
+        {t(payer.state === "late" ? "state.late" : "state.pending")}
+      </span>
+      {notCounted && <span className="block text-sm opacity-70">{t("state.notCounted")}</span>}
+    </span>
+  );
+}
+
+/** For the round's recipient only: say which member each disputed payment came from. */
+function Settle({
+  invite,
+  view,
+  number,
+  disputes,
+  receipts,
+  names,
+  onSaved,
+}: {
+  invite: string;
+  view: CircleView;
+  number: number;
+  disputes: Dispute[];
+  receipts: CheckedReceipt[];
+  names: Map<string, string>;
+  onSaved: () => Promise<void>;
+}) {
+  const [picks, setPicks] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const [state, setState] = useState<"saved" | "error" | null>(null);
+  const { t, when, num } = useT();
+
+  const pickFor = (d: Dispute) => picks[d.paymentHash] ?? d.settledFor;
+  const settled = disputes.flatMap((d) => {
+    const member = pickFor(d);
+    return member ? [{ paymentHash: d.paymentHash, member }] : [];
+  });
+  const changed = disputes.some((d) => picks[d.paymentHash] !== undefined && picks[d.paymentHash] !== d.settledFor);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setState(null);
+    try {
+      await settleRound({ invite, view, round: number, settled });
+      setPicks({});
+      setState("saved");
+      await onSaved();
+    } catch {
+      setState("error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} aria-labelledby="settle" className="space-y-4 rounded-xl border border-current p-4">
+      <h2 id="settle" className="text-xl font-medium">
+        {t("settle.title")}
+      </h2>
+      <p className="leading-7">{t("settle.intro")}</p>
+      {disputes.map((d) => {
+        const first = [...receipts].reverse().find((r) => r.paymentHash === d.paymentHash && r.content);
+        return (
+          <fieldset key={d.paymentHash} className="space-y-2">
+            <legend className="font-medium">
+              {first?.content
+                ? t("settle.payment", {
+                    sats: t("common.sats", { n: num(first.content.amountMsat / 1000n) }),
+                    when: when(new Date(first.content.paidAt * 1000)),
+                  })
+                : d.paymentHash.slice(0, 12)}
+            </legend>
+            {d.claimants.map((pubkey, i) => (
+              <label key={pubkey} className="flex min-h-12 items-center gap-3">
+                <input
+                  type="radio"
+                  name={`settle-${d.paymentHash}`}
+                  checked={pickFor(d) === pubkey}
+                  onChange={() => setPicks({ ...picks, [d.paymentHash]: pubkey })}
+                />
+                <span>
+                  {names.get(pubkey) ?? t("receipts.outsider")}
+                  {i === 0 && t("settle.claimFirst")}
+                </span>
+              </label>
+            ))}
+          </fieldset>
+        );
+      })}
+      {state && (
+        <p role={state === "error" ? "alert" : "status"} className={state === "error" ? "rounded-lg border border-current p-3" : ""}>
+          {t(state === "saved" ? "settle.saved" : "settle.error")}
+        </p>
+      )}
+      <button className={`${button} w-full`} disabled={busy || !changed}>
+        {t(busy ? "settle.saving" : "settle.save")}
+      </button>
+    </form>
+  );
 }
 
 function Pay({

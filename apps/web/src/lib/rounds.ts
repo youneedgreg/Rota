@@ -15,12 +15,14 @@ import {
   AMOUNT_TOLERANCE,
   amountOutsideBand,
   createReceiptEvent,
+  createReceivedEvent,
   decodeInvite,
-  fetchReceipts,
+  fetchRound,
   publishEvent,
   roundView,
   type CircleView,
   type RoundView,
+  type Settlement,
 } from "@rota/records";
 import { memberPubkey, memberSecret, relayUrl } from "./circles";
 import { UiError, type MessageKey } from "./messages";
@@ -87,12 +89,12 @@ export async function sendUnsent(): Promise<void> {
 
 // ---------- reading a round ----------
 
-/** Reads one round's receipts from the relay and checks each of them on this device. */
+/** Reads one round's receipts and the recipient's record from the relay, and checks each of them on this device. */
 export async function loadRound(invite: string, view: CircleView, round: number): Promise<RoundView> {
   const decoded = decodeInvite(invite);
   if (!decoded || !view.circle) throw new UiError("err.notReady");
   const [events, marketMsat] = await Promise.all([
-    fetchReceipts(relayUrl(), view.circlePubkey, { round }),
+    fetchRound(relayUrl(), view.circlePubkey, round),
     marketMsatFor(view),
   ]);
   // Include this device's unsent receipts for this circle, so its own payment shows at once.
@@ -106,6 +108,27 @@ export async function loadRound(invite: string, view: CircleView, round: number)
     now: new Date(),
     network: invoiceNetwork(),
   });
+}
+
+// ---------- settling a disputed payment ----------
+
+/**
+ * Signs and publishes this device's member's "received" record for a round
+ * they receive: which member each disputed payment came from. The whole list
+ * goes out each time; the latest record replaces earlier ones.
+ */
+export async function settleRound(options: {
+  invite: string;
+  view: CircleView;
+  round: number;
+  settled: Settlement[];
+}): Promise<void> {
+  const { invite, view, round, settled } = options;
+  const decoded = decodeInvite(invite);
+  if (!decoded || !view.circle) throw new UiError("err.notReady");
+  if (getRound(view.circle, round).recipient.id !== memberPubkey()) throw new UiError("err.notRecipient");
+  const event = createReceivedEvent({ recipientSecret: memberSecret(), circleSecret: decoded.circleSecret, round, settled });
+  await publishEvent(relayUrl(), event);
 }
 
 // ---------- paying a round ----------
