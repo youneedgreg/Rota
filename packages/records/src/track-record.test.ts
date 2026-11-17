@@ -125,6 +125,18 @@ describe("track records", () => {
     expect(verifyTrackRecord(asFile(file), { network: "bcrt" }).totals.failed).toBe(1);
   });
 
+  it.each([
+    ["a very long circle name", { name: "x".repeat(81) }],
+    ["a contribution that isn't a positive number", { contribution: -15 }],
+    ["too many receipts", { receipts: Array.from({ length: 101 }, () => r1) }],
+  ])("refuses a file with %s", (_name, overrides) => {
+    const honest = createTrackRecord({ memberSecret: alice, circles: [circleEntry([r1])] });
+    const body = JSON.parse(honest.content) as { v: number; circles: Record<string, unknown>[] };
+    body.circles[0] = { ...body.circles[0], ...overrides };
+    const file = finalizeEvent({ kind: TRACK_RECORD_KIND, created_at: T0, tags: [], content: JSON.stringify(body) }, alice);
+    expect(verifyTrackRecord(asFile(file)).problem).toMatch(/can't be read/);
+  });
+
   it("leaves on-time unknown when the file gives no deadline", () => {
     const file = createTrackRecord({ memberSecret: alice, circles: [circleEntry([r1], { lateAfter: {} })] });
     const result = verifyTrackRecord(asFile(file));
