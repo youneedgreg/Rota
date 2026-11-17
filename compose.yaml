@@ -28,6 +28,8 @@ services:
         # there). For mainnet, set both in a root .env file (see .env.example).
         NEXT_PUBLIC_BREEZ_NETWORK: ${NEXT_PUBLIC_BREEZ_NETWORK:-regtest}
         NEXT_PUBLIC_BREEZ_API_KEY: ${NEXT_PUBLIC_BREEZ_API_KEY:-}
+        # Error reports to Sentry; empty (the default) turns them off.
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
