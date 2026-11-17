@@ -29,6 +29,10 @@ const VERSION = 1;
 /** Largest track-record file Rota will read. 20 circles × 20 rounds of receipts fit easily. */
 export const MAX_TRACK_RECORD_BYTES = 2_000_000;
 
+/** Most circles, and receipts per circle, a file may hold: 20 seats means at most 20 rounds. */
+const MAX_CIRCLES = 50;
+const MAX_RECEIPTS_PER_CIRCLE = 100;
+
 /** What the member states about one recipient: their address and the node their invoices come from. */
 export interface StatedRecipient {
   address: string;
@@ -147,8 +151,10 @@ function readCircle(raw: unknown): (TrackRecordCircle & { conversationKey: strin
   const c = raw as Record<string, unknown>;
   if (typeof c.circle !== "string" || !HEX_32.test(c.circle)) return null;
   if (typeof c.conversationKey !== "string" || !HEX_32.test(c.conversationKey)) return null;
-  if (typeof c.name !== "string" || typeof c.currency !== "string" || typeof c.contribution !== "number") return null;
+  if (typeof c.name !== "string" || c.name.length > 80 || typeof c.currency !== "string" || c.currency.length > 8) return null;
+  if (typeof c.contribution !== "number" || !Number.isFinite(c.contribution) || c.contribution <= 0) return null;
   if (!Array.isArray(c.recipients) || !Array.isArray(c.receipts)) return null;
+  if (c.recipients.length > MAX_RECEIPTS_PER_CIRCLE || c.receipts.length > MAX_RECEIPTS_PER_CIRCLE) return null;
   const recipients: StatedRecipient[] = [];
   for (const r of c.recipients as unknown[]) {
     const e = (typeof r === "object" && r !== null ? r : {}) as Record<string, unknown>;
@@ -262,6 +268,7 @@ export function verifyTrackRecord(input: unknown, options: { network?: string } 
   }
   const b = (typeof body === "object" && body !== null ? body : {}) as Record<string, unknown>;
   if (b.v !== VERSION || !Array.isArray(b.circles)) return fail("This track record is from another version of Rota.");
+  if (b.circles.length > MAX_CIRCLES) return fail("This file is too large.");
 
   const seen = new Set<string>();
   const totals = { ...EMPTY_TOTALS };

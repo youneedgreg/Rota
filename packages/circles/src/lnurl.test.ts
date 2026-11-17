@@ -95,6 +95,13 @@ describe("payParamsUrl", () => {
     expect(payParamsUrl(MPESA)).toBe("https://bitcoin.co.ke/.well-known/lnurlp/254700000001");
     expect(payParamsUrl("a+b@example.com")).toBe("https://example.com/.well-known/lnurlp/a%2Bb");
   });
+
+  it.each(["alice@192.168.1.1", "alice@localhost", "alice@example.com/x", "Alice@Example.com", "not an address"])(
+    "refuses %s",
+    (address) => {
+      expect(problemOf(() => payParamsUrl(address))).toBe("address");
+    },
+  );
 });
 
 describe("parsePayParams", () => {
@@ -112,6 +119,11 @@ describe("parsePayParams", () => {
     ["a service error", { status: "ERROR", reason: "unknown user" }, "service"],
     ["the wrong tag", { ...albyResponse, tag: "withdrawRequest" }, "response"],
     ["an http callback", { ...albyResponse, callback: "http://example.com/cb" }, "response"],
+    ["a callback to an IP address", { ...albyResponse, callback: "https://192.168.1.1/cb" }, "response"],
+    ["a callback to an IPv6 address", { ...albyResponse, callback: "https://[::1]/cb" }, "response"],
+    ["a callback to localhost", { ...albyResponse, callback: "https://localhost/cb" }, "response"],
+    ["a callback to a local-network name", { ...albyResponse, callback: "https://router.local/cb" }, "response"],
+    ["a callback with a login in it", { ...albyResponse, callback: "https://me:pw@example.com/cb" }, "response"],
     ["no callback", { ...albyResponse, callback: undefined }, "response"],
     ["min above max", { ...albyResponse, minSendable: 10, maxSendable: 5 }, "response"],
     ["a fractional amount", { ...albyResponse, minSendable: 1.5 }, "response"],
@@ -199,6 +211,7 @@ describe("checkInvoiceResponse", () => {
     ["a stranger's node", () => ({ pr: albyInvoice(5_000_000n, { nodeSecret: otherSecret }) }), "issuer"],
     ["an expired invoice", () => ({ pr: albyInvoice(5_000_000n, { timestamp: T0 - 3600 }) }), "expired"],
     ["an http verify URL", () => ({ pr: albyInvoice(5_000_000n), verify: "http://example.com/v" }), "response"],
+    ["a verify URL to an IP address", () => ({ pr: albyInvoice(5_000_000n), verify: "https://10.0.0.2/v" }), "response"],
   ])("refuses %s", (_label, response, expected) => {
     expect(problemOf(() => checkInvoiceResponse(response(), alby, 5_000_000n, known))).toBe(expected);
   });
