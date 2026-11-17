@@ -128,10 +128,22 @@ const DETAIL_FR: Record<string, string> = {
   "not a Rota receipt": "ce n'est pas un reçu Rota",
   "receipt belongs to another circle": "le reçu appartient à une autre tontine",
   "receipt couldn't be decrypted or read": "le reçu n'a pas pu être déchiffré ou lu",
+  "signed by the node the member's circle records for this address": "signée par le nœud que la tontine du membre indique pour cette adresse",
+  "published by this member": "publié par ce membre",
+  "published by someone other than this member": "publié par une autre personne que ce membre",
+  "receipt couldn't be opened with this file's key": "le reçu n'a pas pu être ouvert avec la clé de ce fichier",
+  "signature doesn't match the receipt": "la signature ne correspond pas au reçu",
   "receipt is for another round": "le reçu concerne un autre tour",
   "receipt is too large": "le reçu est trop volumineux",
   "receipt's content names another circle or round": "le contenu du reçu nomme une autre tontine ou un autre tour",
   "signature doesn't match the event": "la signature ne correspond pas à l'événement",
+  "This isn't a signed Rota track record, or it was changed after signing.":
+    "Ce n'est pas un historique Rota signé, ou il a été modifié après sa signature.",
+  "This file isn't a Rota track record.": "Ce fichier n'est pas un historique Rota.",
+  "This file is too large.": "Ce fichier est trop volumineux.",
+  "This track record can't be read.": "Cet historique ne peut pas être lu.",
+  "This track record is from another version of Rota.": "Cet historique vient d'une autre version de Rota.",
+  "A circle in this track record can't be read.": "Une tontine de cet historique ne peut pas être lue.",
 };
 
 /** A receipt check's reason in the reader's language; unknown ones stay as they are. */
