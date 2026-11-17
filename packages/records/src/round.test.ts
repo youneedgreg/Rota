@@ -130,6 +130,8 @@ describe("roundView", () => {
       ]);
       // The record isn't shown as a failed receipt.
       expect(r.receipts).toHaveLength(2);
+      // Only Bakari's receipt counts, so only it goes into a track record.
+      expect([...r.counted]).toEqual([original.id]);
     });
 
     it("ignores a record signed by anyone but the round's recipient", () => {

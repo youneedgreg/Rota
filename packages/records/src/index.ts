@@ -6,6 +6,7 @@ export {
   newMemberSecret,
   publicKeyOf,
   RECEIPT_KIND,
+  parseReceiptContent,
   ReceiptRefused,
   claimantsByPayment,
   roundClaims,
@@ -37,5 +38,17 @@ export {
   type MemberProfile,
 } from "./circle-events";
 export { createReceivedEvent, readSettlements, RECEIVED_KIND, ReceivedRecordError, type Settlement } from "./received";
-export { fetchCircle, fetchEvents, fetchReceipts, fetchRound, publishEvent, publishReceipt } from "./relay";
+export { fetchCircle, fetchEvents, fetchReceipts, fetchRound, fetchRounds, publishEvent, publishReceipt } from "./relay";
+export {
+  createTrackRecord,
+  MAX_TRACK_RECORD_BYTES,
+  TRACK_RECORD_KIND,
+  TrackRecordError,
+  verifyTrackRecord,
+  type StatedRecipient,
+  type TrackedCircle,
+  type TrackedReceipt,
+  type TrackRecordCircle,
+  type TrackRecordResult,
+} from "./track-record";
 export { roundContext, roundView, type CheckedReceipt, type Dispute, type RoundView } from "./round";

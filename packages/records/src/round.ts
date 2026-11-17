@@ -41,6 +41,8 @@ export interface RoundView {
   settledFor: Set<string>;
   /** Every payment claimed twice or more, settled or not, for the recipient to settle or correct. */
   disputes: Dispute[];
+  /** Ids of the receipt events that count as a member's payment for this round. */
+  counted: Set<string>;
   /** Every receipt for this round, passing or not, newest first. */
   receipts: CheckedReceipt[];
 }
@@ -139,8 +141,8 @@ export function roundView(options: {
     const dispute = disputes.find((d) => d.paymentHash === r.paymentHash);
     return !dispute || dispute.settledFor === r.member.pubkey;
   };
-  const payments: Payment[] = receipts
-    .filter(counts)
+  const countedReceipts = receipts.filter(counts);
+  const payments: Payment[] = countedReceipts
     .map((r) => ({ round, memberId: r.member.pubkey, paidAt: new Date((r.content?.paidAt ?? 0) * 1000) }));
 
   const recipient = view.members.find((m) => m.pubkey === recipientId) as CircleMember;
@@ -151,6 +153,7 @@ export function roundView(options: {
     notCounted: having("not-counted"),
     settledFor,
     disputes,
+    counted: new Set(countedReceipts.map((r) => r.eventId)),
     receipts,
   };
 }
