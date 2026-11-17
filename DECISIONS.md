@@ -2,6 +2,19 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-18 · The recipient settles a copied payment
+
+**The round's recipient settles disputes with a signed "received" record, kind 3574.** Every member can decrypt every receipt, so a member can copy another's invoice and preimage into a receipt of their own, and it passes all four checks. Both claimants then show as disputed. The recipient's record says which member each disputed payment came from. It is signed with the recipient's member key and encrypted for the circle like a receipt; the public tags are only the circle and the round. Each phone takes the recipient from the circle's own record, never from the event, and ignores a record signed by anyone else. The code is `received.ts` in `@rota/records`; the recipient sees a "Settle" form on the round screen.
+
+**It settles disputes and nothing else.** A payment only one member claims is already proven by its receipt, so the recipient can't mark it unpaid: a dishonest recipient could otherwise deny a payment they received. A record naming someone who doesn't claim the payment changes nothing. The member it isn't settled for shows as "not counted" and can still pay the round for real.
+
+**The latest record counts.** The recipient republishes the whole list each time, so a wrong pick can be corrected. Only the recipient's key can sign one, so no one else can override it.
+
+**What the recipient decides on is their own knowledge, not proof.** An M-Pesa recipient sees an SMS, not a payment hash, so in practice they pick the member who really sent it (from the group chat, or from who asked). The record makes their word visible and signed; it doesn't make it true. Binding the payer into the invoice itself would make a copied receipt fail outright:
+
+- **bitcoin.co.ke offers neither LNURL comments (LUD-12) nor payer data (LUD-18)** (checked 2026-11-18 with a dummy number: no `commentAllowed`, no `payerData`). So for M-Pesa recipients, Rota's main case, the recipient's record is the only way to settle a dispute.
+- **Alby offers both** (checked 2026-11-18 on Alby's own public address: `commentAllowed` 255, `payerData` with an optional `pubkey`). LUD-18 puts payer data in the description hash, so a payer's Nostr key there would be signed into the invoice. Not built, and not checked that Alby's invoices actually hash it.
+
 ## 2026-11-15 · Rounds, paying and Verify
 
 **The round screen is worked out on each member's phone.** Once every seat is taken, `/circle` shows the round open now (and earlier rounds), its recipient, and each payer as paid, pending, late or disputed. It reads the round's receipts from the relay and checks every one on the phone. A member counts as paid only with a receipt that passes all checks and a payment no other member also claims. The code is `roundView` in `@rota/records`.
@@ -43,7 +56,7 @@ Rota needs no database, `docker compose up` stays app + relay, and no Rota serve
 
 **When checking a receipt, the recipient, their nodes and the contribution come from the circle's own record, not from the event.** (How the sats are judged: see "Rounds, paying and Verify".) So a member can't vouch for their own receipt. The member's signature must verify and the key must be on the circle's member list. That is the "by this member" half of check 4. Events are rebuilt from their signed fields before checking, because nostr-tools caches a "verified" flag on the event object that would otherwise survive a later change.
 
-**One payment counts once.** Every member can decrypt every receipt, so a member could copy someone else's invoice and preimage into a receipt of their own, and it would pass all four checks. When two members claim the same payment hash, both are shown as disputed until the recipient's signed "received" record settles it (not built yet). Binding the payer into the invoice itself, for example with an LNURL comment, would stop this at the source; whether bitcoin.co.ke accepts comments is not checked.
+**One payment counts once.** Every member can decrypt every receipt, so a member could copy someone else's invoice and preimage into a receipt of their own, and it would pass all four checks. When two members claim the same payment hash, both are shown as disputed until the recipient's signed "received" record settles it (see 2026-11-18). Binding the payer into the invoice itself, for example with an LNURL comment, would stop this at the source; whether bitcoin.co.ke accepts comments is not checked.
 
 **Tested** with generated invoices (19 unit tests) and once against the local strfry relay: publish, read back by circle and round, decrypt and verify. That relay test runs only when `ROTA_TEST_RELAY` is set, so CI skips it. No real payment has gone through it yet.
 
