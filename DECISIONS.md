@@ -2,6 +2,18 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-18 · Track records
+
+**A member's track record is one file, signed with their key (kind 3575), that anyone can check without Rota.** It holds the member's original receipt events, exactly as they published them, and for each circle the NIP-44 conversation key between the member and the circle. That key opens this member's messages to the circle and no one else's, because every member's key is different. So a reader checks the member's signature from the day they paid, opens each receipt, and runs the four checks in their own browser. Nothing is uploaded, and no relay or circle secret is needed. The code is `track-record.ts` in `@rota/records` and the `/track-record` page.
+
+**It holds every circle on the device, and only payments that counted.** The export works each round out the way the round screen does, with disputes settled by the recipient, so a payment the recipient settled for someone else stays out. A payment listed twice in a file counts once.
+
+**The file shows the recipients' addresses, M-Pesa numbers included.** A new, address-free summary was the other option, but bitcoin.co.ke's invoices name the number in their signed description, so it can't be hidden without dropping the invoice, and without the invoice a receipt proves almost nothing. The export page says this before the member downloads. The verify page masks phone numbers on screen.
+
+**The reader is told what is proven and what is only stated.** Proven by the receipts: the payment, the address, the sats, when the recipient's service issued the invoice, and who published it. Stated by the member: the circle's name and contribution, each round's deadline (so "on time" compares the service-signed invoice time with a deadline the member gives), and the node each recipient's invoices come from (used for the issuer check, as there's no circle record to compare with). A reader who wants more can fetch a fresh invoice from the address and compare the node; Rota doesn't do that for them yet.
+
+**Known gap:** a member can leave out rounds they didn't pay. The file shows what they did pay, not what they skipped.
+
 ## 2026-11-18 · The recipient settles a copied payment
 
 **The round's recipient settles disputes with a signed "received" record, kind 3574.** Every member can decrypt every receipt, so a member can copy another's invoice and preimage into a receipt of their own, and it passes all four checks. Both claimants then show as disputed. The recipient's record says which member each disputed payment came from. It is signed with the recipient's member key and encrypted for the circle like a receipt; the public tags are only the circle and the round. Each phone takes the recipient from the circle's own record, never from the event, and ignores a record signed by anyone else. The code is `received.ts` in `@rota/records`; the recipient sees a "Settle" form on the round screen.
