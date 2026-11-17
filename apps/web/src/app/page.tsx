@@ -20,6 +20,11 @@ export default function Home() {
           k="home.wallet"
           className="inline-flex min-h-12 items-center rounded-lg border border-current px-4 font-medium"
         />
+        <TLink
+          href="/track-record"
+          k="home.trackRecord"
+          className="inline-flex min-h-12 items-center rounded-lg border border-current px-4 font-medium"
+        />
       </div>
       <MyCircles />
       <section aria-labelledby="checks">

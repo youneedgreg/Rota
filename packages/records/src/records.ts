@@ -188,7 +188,8 @@ export interface ReceiptEventResult {
   paymentHash?: string;
 }
 
-function parseContent(text: string): ReceiptContent | null {
+/** Reads decrypted receipt content, or null if it isn't a well-formed Rota receipt. */
+export function parseReceiptContent(text: string): ReceiptContent | null {
   let raw: unknown;
   try {
     raw = JSON.parse(text);
@@ -251,7 +252,7 @@ export function verifyReceiptEvent(input: unknown, context: CircleContext): Rece
 
   let content: ReceiptContent | null = null;
   try {
-    content = parseContent(decrypt(event.content, getConversationKey(context.circleSecret, event.pubkey)));
+    content = parseReceiptContent(decrypt(event.content, getConversationKey(context.circleSecret, event.pubkey)));
   } catch {
     content = null;
   }

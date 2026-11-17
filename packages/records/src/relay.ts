@@ -85,6 +85,11 @@ export async function fetchRound(relayUrl: string, circle: string, round: number
   return events.filter((event) => event.tags.some((t) => t[0] === "round" && t[1] === String(round)));
 }
 
+/** Reads every round's receipts and "received" records for a circle, for a track record. */
+export async function fetchRounds(relayUrl: string, circle: string, timeoutMs?: number): Promise<Event[]> {
+  return fetchEvents(relayUrl, { kinds: [RECEIPT_KIND, RECEIVED_KIND], "#p": [circle] }, timeoutMs);
+}
+
 /** Reads a circle's definition, joins and roster. Pass them to `assembleCircle`. */
 export async function fetchCircle(relayUrl: string, circle: string, timeoutMs?: number): Promise<Event[]> {
   return fetchEvents(relayUrl, { kinds: [CIRCLE_KIND, JOIN_KIND, ROSTER_KIND], "#p": [circle] }, timeoutMs);
