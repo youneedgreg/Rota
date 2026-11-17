@@ -8,7 +8,7 @@ import {
   type AddressProof,
   type Invoice,
 } from "@rota/receipts";
-import type { Currency } from "./circle";
+import { normalizeAddress, type Currency } from "./circle";
 import { checkTandoRate, localToMsat, PriceError, type Quote } from "./prices";
 
 /**
@@ -86,7 +86,20 @@ function httpsUrl(value: unknown, what: string): string {
     throw new LnurlError("response", `The ${what} URL is not a URL.`);
   }
   if (url.protocol !== "https:") throw new LnurlError("response", `The ${what} URL is not HTTPS.`);
+  if (url.username || url.password) throw new LnurlError("response", `The ${what} URL carries a login.`);
+  if (!isPublicHostName(url.hostname)) throw new LnurlError("response", `The ${what} URL doesn't point to a public site.`);
   return url.toString();
+}
+
+/**
+ * A host name on the public internet: letters in the last label, so no IP
+ * address, and not localhost or a local-network name. Stops a recipient's
+ * service from pointing the payer's phone at their home network.
+ */
+function isPublicHostName(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/\.$/, "");
+  if (!/^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(host)) return false;
+  return !/(^|\.)(localhost|local|internal|lan|home|arpa)$/.test(host);
 }
 
 function msat(value: unknown, what: string): bigint {
@@ -99,7 +112,7 @@ function msat(value: unknown, what: string): bigint {
 /** LUD-16: user@domain is served at https://domain/.well-known/lnurlp/user. */
 export function payParamsUrl(address: string): string {
   const at = address.indexOf("@");
-  if (at <= 0) throw new LnurlError("address", "Not a Lightning address.");
+  if (at <= 0 || normalizeAddress(address) !== address) throw new LnurlError("address", "Not a Lightning address.");
   return `https://${address.slice(at + 1)}/.well-known/lnurlp/${encodeURIComponent(address.slice(0, at))}`;
 }
 
