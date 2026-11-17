@@ -81,7 +81,11 @@ describe("createReceiptEvent", () => {
   it("puts nothing readable in the content: no address, invoice, preimage or amount", () => {
     const pay = payment();
     const event = receipt(alice, pay);
-    for (const secret of [ADDRESS, pay.invoice, pay.preimage, "178000", "KES"]) {
+    // NIP-44 output is plain base64, so no readable JSON fits in it.
+    expect(event.content).toMatch(/^[A-Za-z0-9+/]+={0,2}$/);
+    // Short values are matched as they'd appear in the JSON, quotes included:
+    // a bare "KES" turns up in random base64 now and then (~1,100 chars here, so about 1 run in 240).
+    for (const secret of [ADDRESS, pay.invoice, pay.preimage, '"178000"', '"KES"']) {
       expect(event.content).not.toContain(secret);
     }
   });
