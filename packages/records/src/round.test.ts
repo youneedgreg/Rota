@@ -2,6 +2,7 @@ import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage
 import type { Event } from "nostr-tools/pure";
 import { describe, expect, it } from "vitest";
 import { assembleCircle, createCircleEvent, createJoinEvent, type CircleView } from "./circle-events";
+import { createReceivedEvent } from "./received";
 import { createReceiptEvent, newCircleSecret, newMemberSecret, publicKeyOf } from "./records";
 import { roundContext, roundView } from "./round";
 
@@ -102,6 +103,57 @@ describe("roundView", () => {
     const r = round1([original, copied], 3);
     expect([...r.disputed].sort()).toEqual([publicKeyOf(bakari), publicKeyOf(chiku)].sort());
     expect(r.status.paidCount).toBe(0);
+  });
+
+  describe("the recipient settling a copied payment", () => {
+    const original = paid(bakari, "r1 shared", T0 + 60);
+    const copied = paid(chiku, "r1 shared", T0 + 70);
+    const hash = () => round1([original, copied], 3).disputes[0]?.paymentHash as string;
+    const settle = (by: Uint8Array, member: Uint8Array, createdAt: number, round = 1) =>
+      createReceivedEvent({ recipientSecret: by, circleSecret, round, settled: [{ paymentHash: hash(), member: publicKeyOf(member) }], createdAt });
+
+    it("lists the dispute for the recipient, oldest claim first", () => {
+      const r = round1([copied, original], 3);
+      expect(r.disputes).toEqual([{ paymentHash: hash(), claimants: [publicKeyOf(bakari), publicKeyOf(chiku)] }]);
+      expect(r.settledFor.size).toBe(0);
+    });
+
+    it("counts the payment for the member the recipient names, and not for the copier", () => {
+      const r = round1([original, copied, settle(amina, bakari, T0 + 120)], 3);
+      expect(r.disputed.size).toBe(0);
+      expect([...r.settledFor]).toEqual([publicKeyOf(bakari)]);
+      expect([...r.notCounted]).toEqual([publicKeyOf(chiku)]);
+      expect(r.disputes[0]?.settledFor).toBe(publicKeyOf(bakari));
+      expect(r.status.payers.map((p) => [p.member.name, p.state])).toEqual([
+        ["Bakari", "paid"],
+        ["Chiku", "pending"],
+      ]);
+      // The record isn't shown as a failed receipt.
+      expect(r.receipts).toHaveLength(2);
+    });
+
+    it("ignores a record signed by anyone but the round's recipient", () => {
+      const r = round1([original, copied, settle(chiku, chiku, T0 + 120)], 3);
+      expect(r.disputed.size).toBe(2);
+      expect(r.status.paidCount).toBe(0);
+    });
+
+    it("lets the recipient correct a pick: the latest record counts", () => {
+      const r = round1([original, copied, settle(amina, chiku, T0 + 200), settle(amina, bakari, T0 + 120)], 3);
+      expect([...r.settledFor]).toEqual([publicKeyOf(chiku)]);
+      expect([...r.notCounted]).toEqual([publicKeyOf(bakari)]);
+    });
+
+    it("ignores a record for another round", () => {
+      const r = round1([original, copied, settle(amina, bakari, T0 + 120, 2)], 3);
+      expect(r.disputed.size).toBe(2);
+    });
+
+    it("lets the copier still pay for real", () => {
+      const r = round1([original, copied, settle(amina, bakari, T0 + 120), paid(chiku, "r1 chiku own", T0 + 180)], 4);
+      expect(r.status.state).toBe("complete");
+      expect(r.notCounted.size).toBe(0);
+    });
   });
 
   it("counts nothing as paid when there's no price to compare amounts with", () => {

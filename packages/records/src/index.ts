@@ -7,6 +7,7 @@ export {
   publicKeyOf,
   RECEIPT_KIND,
   ReceiptRefused,
+  claimantsByPayment,
   roundClaims,
   verifyReceiptEvent,
   type AmountBand,
@@ -35,5 +36,6 @@ export {
   type CircleView,
   type MemberProfile,
 } from "./circle-events";
-export { fetchCircle, fetchEvents, fetchReceipts, publishEvent, publishReceipt } from "./relay";
-export { roundContext, roundView, type CheckedReceipt, type RoundView } from "./round";
+export { createReceivedEvent, readSettlements, RECEIVED_KIND, ReceivedRecordError, type Settlement } from "./received";
+export { fetchCircle, fetchEvents, fetchReceipts, fetchRound, publishEvent, publishReceipt } from "./relay";
+export { roundContext, roundView, type CheckedReceipt, type Dispute, type RoundView } from "./round";
