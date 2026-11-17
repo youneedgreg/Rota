@@ -123,7 +123,8 @@ function Connect({ onSaved }: { onSaved: () => void }) {
         <input className={input} type="password" value={pin} onChange={(e) => setPin(e.target.value)} autoComplete="new-password" />
       </label>
       <fieldset className="space-y-3 rounded-lg border border-current/20 p-3">
-        <legend className="px-1 font-medium">Alby Hub</legend>
+        <legend className="px-1 font-medium">{t("nwc.albyWeb")}</legend>
+        <p className="opacity-80">{t("nwc.albyWebNote")}</p>
         <label className="block space-y-2">
           <span>{t("nwc.cycleEnds")}</span>
           <input className={input} type="date" value={until} onChange={(e) => setUntil(e.target.value)} />
@@ -138,9 +139,8 @@ function Connect({ onSaved }: { onSaved: () => void }) {
       </fieldset>
       <fieldset className="space-y-3 rounded-lg border border-current/20 p-3">
         <legend className="px-1 font-medium">{t("nwc.other")}</legend>
-        <p className="opacity-80">
-          {t("nwc.otherText")}
-        </p>
+        <p className="opacity-80">{t("nwc.otherText")}</p>
+        <p className="opacity-80">{t("nwc.albyAppSteps")}</p>
         <label className="block space-y-2">
           <span>{t("nwc.connection")}</span>
           <textarea

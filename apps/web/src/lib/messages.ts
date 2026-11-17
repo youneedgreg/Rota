@@ -193,11 +193,16 @@ const en = {
   "nwc.pinLock": "PIN to lock this connection on this device",
   "nwc.cycleEnds": "Cycle ends on",
   "nwc.approvalPage": "Your Hub's approval page",
+  "nwc.albyWeb": "Alby Hub in a browser",
+  "nwc.albyWebNote":
+    "For a Hub you open in a web browser. The Alby Hub desktop app has no approval page: use the box below instead.",
   "nwc.waiting": "Waiting for your wallet…",
   "nwc.connectAlby": "Connect Alby Hub",
-  "nwc.other": "Any other wallet",
+  "nwc.other": "Paste a connection (Alby Hub app or any other wallet)",
   "nwc.otherText":
-    "In your wallet, create a connection that can only pay, with a monthly limit of the amount above, then paste it here.",
+    "In your wallet, create a connection that can only pay, with a monthly limit of the amount above and an end date, then paste it here.",
+  "nwc.albyAppSteps":
+    "In the Alby Hub app: Connections → Add connection → Custom. Tick only \"Read your node info\" and \"Send payments\", leave isolation off, set the monthly budget and turn on expiration.",
   "nwc.connection": "Wallet connection",
   "nwc.checkSave": "Check and save",
   "nwc.connectedDevice": "A wallet is connected on this device.",
@@ -420,11 +425,16 @@ const fr: Record<MessageKey, string> = {
   "nwc.pinLock": "Code PIN pour verrouiller cette connexion sur cet appareil",
   "nwc.cycleEnds": "Fin du cycle le",
   "nwc.approvalPage": "Page d'approbation de votre Hub",
+  "nwc.albyWeb": "Alby Hub dans un navigateur",
+  "nwc.albyWebNote":
+    "Pour un Hub que vous ouvrez dans un navigateur web. L'application de bureau Alby Hub n'a pas de page d'approbation : utilisez plutôt le cadre ci-dessous.",
   "nwc.waiting": "En attente de votre portefeuille…",
   "nwc.connectAlby": "Connecter Alby Hub",
-  "nwc.other": "Tout autre portefeuille",
+  "nwc.other": "Coller une connexion (application Alby Hub ou tout autre portefeuille)",
   "nwc.otherText":
-    "Dans votre portefeuille, créez une connexion qui peut seulement payer, avec une limite mensuelle du montant ci-dessus, puis collez-la ici.",
+    "Dans votre portefeuille, créez une connexion qui peut seulement payer, avec une limite mensuelle du montant ci-dessus et une date de fin, puis collez-la ici.",
+  "nwc.albyAppSteps":
+    "Dans l'application Alby Hub : Connections → Add connection → Custom. Cochez seulement « Read your node info » et « Send payments », laissez l'isolation désactivée, fixez le budget mensuel et activez l'expiration.",
   "nwc.connection": "Connexion au portefeuille",
   "nwc.checkSave": "Vérifier et enregistrer",
   "nwc.connectedDevice": "Un portefeuille est connecté sur cet appareil.",
