@@ -39,9 +39,12 @@ export default function Home() {
           ))}
         </ol>
       </section>
-      <p className="text-sm opacity-70">
-        <T k="home.construction" />
-      </p>
+      <footer className="text-sm opacity-80">
+        <T k="home.builtFor" />{" "}
+        <a className="inline-flex min-h-11 items-center underline" href="https://github.com/youneedgreg/Rota">
+          <T k="home.source" />
+        </a>
+      </footer>
     </main>
   );
 }
