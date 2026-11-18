@@ -8,7 +8,7 @@ import { loadRound, payRound, sendUnsent, settleRound, type PaidRound } from "@/
 import { walletsOnDevice } from "@/lib/storage-keys";
 import { useT } from "@/lib/lang";
 import type { MessageKey } from "@/lib/messages";
-import { button, field, input, maskAddress, secondary } from "@/lib/ui";
+import { button, field, input, maskAddress, pill, secondary } from "@/lib/ui";
 
 const REFRESH_MS = 10_000;
 const noSubscribe = () => () => {};
@@ -42,7 +42,7 @@ export function RoundPanel({ invite, view, me }: { invite: string; view: CircleV
   if (!open || number === null) {
     return (
       <section aria-labelledby="round" className="space-y-2 rounded-2xl border border-line bg-surface p-4 shadow-sm">
-        <h2 id="round" className="text-xl font-medium">
+        <h2 id="round" className="text-xl font-semibold">
           {t("round.title", { n: 1 })}
         </h2>
         <p>{t("round.opens", { when: when(new Date(view.draft.schedule.startsAt)) })}</p>
@@ -59,7 +59,7 @@ export function RoundPanel({ invite, view, me }: { invite: string; view: CircleV
               key={n}
               type="button"
               aria-current={n === number ? "true" : undefined}
-              className={`min-h-12 min-w-12 rounded-lg border px-3 ${n === number ? "bg-foreground text-background" : "border-line-strong"}`}
+              className={`min-h-12 min-w-12 rounded-lg border px-3 font-semibold ${n === number ? "border-accent bg-accent text-accent-ink" : "border-line-strong bg-surface"}`}
               onClick={() => setPicked(n === open.number ? null : n)}
             >
               {n}
@@ -120,24 +120,41 @@ function Round({
   return (
     <>
       <section aria-labelledby="round" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
-        <h2 id="round" className="text-xl font-medium">
+        <h2 id="round" className="text-xl font-semibold">
           {t("round.titleOf", { n: number, total })}
         </h2>
         <p className="leading-7">
           {t("round.pays")}
-          <span className="font-medium">{recipient.name}</span>
+          <span className="font-semibold">{recipient.name}</span>
           {recipient.pubkey === me && t("round.youSuffix")}
           {t("round.at", { address: maskAddress(recipient.payoutAddress) })}{" "}
           {status.state === "complete"
             ? t("round.complete")
             : t("round.progress", { paid: status.paidCount, total: status.payers.length, when: when(lateAfterOf) })}
         </p>
-        <ul className="space-y-2">
+        <div aria-hidden="true" className="h-2.5 overflow-hidden rounded-full bg-foreground/10">
+          <div
+            className={`h-full rounded-full ${status.state === "complete" ? "bg-ok" : "bg-accent"}`}
+            style={{ width: `${status.payers.length ? (100 * status.paidCount) / status.payers.length : 0}%` }}
+          />
+        </div>
+        <ul className="-mx-2 space-y-1">
           {status.payers.map((p) => (
-            <li key={p.member.id} className="flex items-baseline justify-between gap-3">
-              <span>
-                {p.member.name}
-                {p.member.id === me && t("circle.you")}
+            <li
+              key={p.member.id}
+              className={`flex items-center justify-between gap-3 rounded-xl px-2 py-2 ${p.member.id === me ? "bg-accent/10 ring-1 ring-accent/40" : ""}`}
+            >
+              <span className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground/10 font-semibold"
+                >
+                  {p.member.name.slice(0, 1).toUpperCase()}
+                </span>
+                <span>
+                  {p.member.name}
+                  {p.member.id === me && <span className="font-semibold">{t("circle.you")}</span>}
+                </span>
               </span>
               <StateBadge
                 payer={p}
@@ -187,21 +204,33 @@ function StateBadge({
   settled: boolean;
 }) {
   const { t, when } = useT();
-  if (disputed) return <span className="font-medium">{t("state.disputed")}</span>;
+  if (disputed) {
+    return (
+      <span className={`${pill} bg-warn/15 text-warn`}>
+        <span aria-hidden="true">?</span>
+        {t("state.disputed")}
+      </span>
+    );
+  }
   if (payer.state === "paid") {
     return (
       <span className="text-right">
-        <span className="font-medium">{t("state.paid")}</span>
-        {payer.onTime === false && t("state.paidLate")}
+        <span className={`${pill} bg-ok/15 text-ok`}>
+          <span aria-hidden="true">✓</span>
+          {t("state.paid")}
+          {payer.onTime === false && t("state.paidLate")}
+        </span>
         {payer.paidAt && <span className="block text-sm text-muted">{when(payer.paidAt)}</span>}
         {settled && <span className="block text-sm text-muted">{t("state.settledNote")}</span>}
       </span>
     );
   }
+  const late = payer.state === "late";
   return (
     <span className="text-right">
-      <span className={payer.state === "late" ? "font-medium" : "text-muted"}>
-        {t(payer.state === "late" ? "state.late" : "state.pending")}
+      <span className={`${pill} ${late ? "bg-bad/15 text-bad" : "bg-foreground/10 text-muted"}`}>
+        <span aria-hidden="true">{late ? "!" : "○"}</span>
+        {t(late ? "state.late" : "state.pending")}
       </span>
       {notCounted && <span className="block text-sm text-muted">{t("state.notCounted")}</span>}
     </span>
@@ -256,7 +285,7 @@ function Settle({
 
   return (
     <form onSubmit={submit} aria-labelledby="settle" className="space-y-4 rounded-2xl border-2 border-accent bg-surface p-4 shadow-sm">
-      <h2 id="settle" className="text-xl font-medium">
+      <h2 id="settle" className="text-xl font-semibold">
         {t("settle.title")}
       </h2>
       <p className="leading-7">{t("settle.intro")}</p>
@@ -345,8 +374,8 @@ function Pay({
 
   if (done) {
     return (
-      <section aria-labelledby="pay" className="space-y-2 rounded-2xl border-2 border-accent bg-surface p-4 shadow-sm">
-        <h2 id="pay" className="text-xl font-medium">
+      <section aria-labelledby="pay" className="space-y-2 rounded-2xl border-2 border-ok bg-ok/10 p-4 shadow-sm">
+        <h2 id="pay" className="text-xl font-semibold">
           {t("pay.done")}
         </h2>
         <p className="leading-7">
@@ -367,8 +396,8 @@ function Pay({
 
   if (!chosen) {
     return (
-      <section aria-labelledby="pay" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
-        <h2 id="pay" className="text-xl font-medium">
+      <section aria-labelledby="pay" className="space-y-3 rounded-2xl border-2 border-accent bg-surface p-4 shadow-sm">
+        <h2 id="pay" className="text-xl font-semibold">
           {label}
         </h2>
         <p className="leading-7">{t("pay.setupFirst")}</p>
@@ -380,8 +409,8 @@ function Pay({
   }
 
   return (
-    <form onSubmit={submit} aria-labelledby="pay" className="space-y-4 rounded-2xl border border-line bg-surface p-4 shadow-sm">
-      <h2 id="pay" className="text-xl font-medium">
+    <form onSubmit={submit} aria-labelledby="pay" className="space-y-4 rounded-2xl border-2 border-accent bg-surface p-4 shadow-sm">
+      <h2 id="pay" className="text-xl font-semibold">
         {label}
       </h2>
       <p className="leading-7 text-muted">{t("pay.intro")}</p>
@@ -417,7 +446,7 @@ function Pay({
           {error}
         </p>
       )}
-      <button className={`${button} w-full`} disabled={busy !== null}>
+      <button className={`${button} w-full text-lg`} disabled={busy !== null}>
         {t(busy ?? "common.pay")}
       </button>
     </form>
@@ -429,7 +458,7 @@ function Receipts({ receipts }: { receipts: CheckedReceipt[] }) {
   if (receipts.length === 0) return null;
   return (
     <section aria-labelledby="receipts" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
-      <h2 id="receipts" className="text-xl font-medium">
+      <h2 id="receipts" className="text-xl font-semibold">
         {t("receipts.title")}
       </h2>
       <ul className="space-y-3">
@@ -463,7 +492,10 @@ function ReceiptRow({ receipt }: { receipt: CheckedReceipt }) {
       </div>
       {shown && (
         <div className="space-y-2 rounded-xl border border-line bg-background p-3">
-          <p className="font-medium">{t(receipt.ok ? "receipts.allPass" : "receipts.fails")}</p>
+          <p className={`${pill} ${receipt.ok ? "bg-ok/15 text-ok" : "bg-bad/15 text-bad"}`}>
+            <span aria-hidden="true">{receipt.ok ? "✓" : "✗"}</span>
+            {t(receipt.ok ? "receipts.allPass" : "receipts.fails")}
+          </p>
           <ul className="space-y-1">
             {receipt.checks.map((c) => (
               <CheckLine
@@ -485,8 +517,11 @@ function ReceiptRow({ receipt }: { receipt: CheckedReceipt }) {
 function CheckLine({ ok, label, detail }: { ok: boolean; label: string; detail: string }) {
   const { t } = useT();
   return (
-    <li className="flex gap-2">
-      <span aria-hidden="true" className="w-5 shrink-0 font-bold">
+    <li className="flex gap-3 py-1">
+      <span
+        aria-hidden="true"
+        className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-sm font-bold ${ok ? "bg-ok/15 text-ok" : "bg-bad/15 text-bad"}`}
+      >
         {ok ? "✓" : "✗"}
       </span>
       <span>
