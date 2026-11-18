@@ -135,11 +135,11 @@ Measured on 18 Nov 2026 on my Mac (Apple silicon).
 |---|---|
 | Automated tests | 305 passing across six packages, plus 3 relay tests that run against a local relay |
 | Cold `docker compose build` (no build cache) | 41 s |
-| First load of a page, gzipped (HTML, JS, CSS, fonts) | 313 KB home, 319 KB circle, 347 KB wallet |
+| First load of a page, gzipped (HTML, JS, CSS) | 223 KB home, 228 KB circle, 256 KB wallet |
 | Built-in wallet download (gzipped, on demand) | 5.0 MB |
 | `lightning-receipts` package | 9 files, 7.7 KB packed |
 | Tap to payment confirmed, tap to M-Pesa SMS | Measured after the first real payment |
-| Load time on slow 3G | Not measured yet |
+| Load time on slow 3G (Chrome's profile: 2 s latency, 50 KB/s, CPU slowed 4×; median of 3 runs, relay on the same machine) | Home: text shown at 4.4 s, fully loaded at 8.9 s. Circle: round 3 shown at 14.2 s. Wallet: fully loaded at 9.7 s |
 
 ## Next steps
 

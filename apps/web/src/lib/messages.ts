@@ -17,6 +17,12 @@ const en = {
   "common.pin": "PIN",
   "error.generic": "Something went wrong. Try again.",
   "lang.label": "Language",
+  "page.home": "Rota",
+  "page.new": "Start a circle · Rota",
+  "page.circle": "Circle · Rota",
+  "page.wallet": "Wallet · Rota",
+  "page.track": "Track record · Rota",
+  "page.demo": "Demo login · Rota",
 
   // home
   "home.tagline":
@@ -28,7 +34,8 @@ const en = {
   "home.check.address": "To this address",
   "home.check.issuer": "By this service",
   "home.check.amount": "This amount, this round, this member",
-  "home.construction": "Under construction for the Dakar Bitcoin Hack.",
+  "home.builtFor": "Built for the Dakar Bitcoin Hack 2026.",
+  "home.source": "Open source on GitHub",
   "mine.title": "Your circles on this device",
 
   // start a circle
@@ -297,6 +304,12 @@ const fr: Record<MessageKey, string> = {
   "common.pin": "Code PIN",
   "error.generic": "Une erreur s'est produite. Réessayez.",
   "lang.label": "Langue",
+  "page.home": "Rota",
+  "page.new": "Créer une tontine · Rota",
+  "page.circle": "Tontine · Rota",
+  "page.wallet": "Portefeuille · Rota",
+  "page.track": "Historique · Rota",
+  "page.demo": "Connexion de démo · Rota",
 
   "home.tagline":
     "Une tontine sans trésorier. Chaque membre paie directement le bénéficiaire du tour via Lightning, et chaque paiement laisse un reçu que personne ne peut falsifier.",
@@ -307,7 +320,8 @@ const fr: Record<MessageKey, string> = {
   "home.check.address": "À cette adresse",
   "home.check.issuer": "Par ce service",
   "home.check.amount": "Ce montant, ce tour, ce membre",
-  "home.construction": "En construction pour le Dakar Bitcoin Hack.",
+  "home.builtFor": "Conçu pour le Dakar Bitcoin Hack 2026.",
+  "home.source": "Code source sur GitHub",
   "mine.title": "Vos tontines sur cet appareil",
 
   "new.title": "Créer une tontine",

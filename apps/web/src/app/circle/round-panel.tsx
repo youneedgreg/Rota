@@ -59,7 +59,7 @@ export function RoundPanel({ invite, view, me }: { invite: string; view: CircleV
               key={n}
               type="button"
               aria-current={n === number ? "true" : undefined}
-              className={`min-h-12 min-w-12 rounded-lg border px-3 ${n === number ? "bg-foreground text-background" : "border-current/40"}`}
+              className={`min-h-12 min-w-12 rounded-lg border px-3 ${n === number ? "bg-foreground text-background" : "border-current/60"}`}
               onClick={() => setPicked(n === open.number ? null : n)}
             >
               {n}
@@ -276,6 +276,7 @@ function Settle({
               <label key={pubkey} className="flex min-h-12 items-center gap-3">
                 <input
                   type="radio"
+                  className="size-5"
                   name={`settle-${d.paymentHash}`}
                   checked={pickFor(d) === pubkey}
                   onChange={() => setPicks({ ...picks, [d.paymentHash]: pubkey })}
@@ -394,7 +395,7 @@ function Pay({
             ] as const
           ).map(([value, text]) => (
             <label key={value} className="flex min-h-12 items-center gap-3">
-              <input type="radio" name="wallet" checked={chosen === value} onChange={() => setKind(value)} />
+              <input type="radio" className="size-5" name="wallet" checked={chosen === value} onChange={() => setKind(value)} />
               {t(text)}
             </label>
           ))}

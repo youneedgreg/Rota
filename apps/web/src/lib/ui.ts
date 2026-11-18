@@ -1,7 +1,7 @@
 // Shared class names and messages for the app's forms.
 export const button = "min-h-12 rounded-lg bg-foreground px-4 font-medium text-background disabled:opacity-50";
 export const secondary = "min-h-12 rounded-lg border border-current px-4 font-medium disabled:opacity-50";
-export const input = "min-h-12 w-full rounded-lg border border-current/30 bg-transparent px-3";
+export const input = "min-h-12 w-full rounded-lg border border-current/60 bg-transparent px-3";
 export const field = "block space-y-2";
 
 /** Shows a payout address without the middle of a phone number: 2547•••••678@bitcoin.co.ke. */
