@@ -1,7 +1,8 @@
-# Rota, locally: the web app and its Nostr relay.
+# Rota, locally: the web app, its Nostr relay and a seeded demo circle.
 #   docker compose up --build
 # App: http://localhost:3000 · Relay: ws://localhost:7777
 # Both ports are bound to this machine only.
+# Demo logins: docker compose logs seed
 
 services:
   relay:
@@ -35,6 +36,23 @@ services:
     depends_on:
       - relay
     restart: unless-stopped
+
+  seed:
+    # Publishes the fictional demo circle once (regtest only), prints its
+    # links and exits. Run again, it finds the circle and prints the same links.
+    build:
+      context: .
+      dockerfile: scripts/seed/Dockerfile
+    # Shares the relay's network, so the relay is ws://localhost:7777 here too
+    # (Rota accepts plain ws:// only for this computer).
+    network_mode: "service:relay"
+    environment:
+      RELAY_URL: ws://localhost:7777
+      WEB_URL: http://localhost:3000
+      NEXT_PUBLIC_BREEZ_NETWORK: ${NEXT_PUBLIC_BREEZ_NETWORK:-regtest}
+    depends_on:
+      - relay
+    restart: "no"
 
 volumes:
   relay-data:
