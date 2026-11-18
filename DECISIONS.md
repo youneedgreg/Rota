@@ -2,6 +2,18 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-18 · The seeded demo circle
+
+**`docker compose up` seeds a fictional circle in round 3, with rounds 1 and 2 paid and proven.** A one-shot `seed` service (`scripts/seed`) publishes it to the local relay and prints a view-only invite link plus one demo login per member (`docker compose logs seed`). Five members (Amina, Baraka, Wanjiru, Otieno, Fatou) pay 1,000 KES a month to `<name>@example.com`, a domain reserved by RFC 2606, so no address or phone number belongs to anyone real. Round 1 has one late payment; round 3 opened two or three days before the seed ran, with Amina and Otieno paid and Baraka and Fatou still to pay.
+
+**The receipts pass all four checks, but no money moved.** Their invoices are signed with demo node keys, their amounts come from the day's price, and every key is derived from a public label, so anyone can recreate them. That is why the seed runs on regtest only and refuses any other network: fake-paid receipts must never sit next to real circles, and the hosted mainnet demo gets real rounds instead. Amounts are judged against ±20% of today's price, so after a big price move the seeded receipts start failing the amount check; seeding a fresh relay fixes that.
+
+**Seeding again keeps the first circle.** The NIP-44 encryption makes event ids differ each run, so the seed looks for a definition from the demo organizer's key on the relay and, if it finds one, prints that circle's links and publishes nothing. The links stay the same until the relay's volume is removed.
+
+**Demo logins replace the browser's member key, on regtest only.** A login link is `/demo#<member secret>.<invite>`. The page shows who you'll be and asks before replacing an existing member key. On mainnet the page refuses every link: a link that swaps in a key someone else knows would let them sign as you. The hosted judge path needs its own way in (step J).
+
+**The seed runs with `tsx` 4.23.15** (published 20 Sep 2026): the packages import their files without extensions, which Node's own TypeScript support doesn't resolve.
+
 ## 2026-11-18 · Security pass
 
 **The threat model is written down in [THREAT_MODEL.md](THREAT_MODEL.md),** with the code behind each defence and the gaps in order of risk. The main finding: the "one contribution a month, nothing else" claim holds for NWC connections only. A compromised web host could serve code that reads the built-in wallet when the member types their PIN. The advice for now is to keep about one contribution in the built-in wallet.
