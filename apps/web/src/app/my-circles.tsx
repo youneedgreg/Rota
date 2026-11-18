@@ -26,7 +26,7 @@ export function MyCircles() {
       <ul className="space-y-2">
         {circles.map((c) => (
           <li key={c.invite}>
-            <Link className="underline" href={`/circle#${c.invite}`}>
+            <Link className="inline-flex min-h-11 items-center underline" href={`/circle#${c.invite}`}>
               {c.name}
             </Link>
           </li>
