@@ -2,6 +2,22 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-18 · The receipt checker on npm
+
+**Name: `lightning-receipts`, unscoped,** because it's useful to any Lightning app, not only Rota, and the name says what it does. It was free on npm on 18 Nov. The workspace uses the same name, so Rota's code imports it the way anyone else would.
+
+**What ships:** the decoder and the four checks, built to ES modules with type declarations (`dist/`), plus the README and the MIT licence: 9 files, about 8 KB packed. The fake-invoice helper (`./testing`) stays out; Rota's tests and the demo seed use it from the workspace. Works in browsers and Node 20.19 or later (the `@noble` packages need 20.19).
+
+**Workspace source, published build.** Inside the repo the package still exports its TypeScript source, so Next and Vitest need no build step. `publishConfig.exports` points the published package at `dist/` instead. pnpm applies that when it packs, npm doesn't, so **publish with `pnpm publish`, not `npm publish`.** The source imports its own files without an extension (Turbopack can't map `./x.js` back to `x.ts`), so after `tsc` a small script, `add-js-extensions.mjs`, adds `.js` to relative imports in `dist/` for Node.
+
+**Checked from the packed tarball,** installed into an empty folder from the registry's copies of its three dependencies:
+- a generated receipt passes all four checks with the strong address proof;
+- a wrong preimage, address or amount fails exactly that check, and a tampered invoice throws `InvoiceError`;
+- it loads with both `import` and `require()` on Node 24;
+- a TypeScript consumer with `moduleResolution: nodenext` sees the types and can't import `./testing`.
+
+Not tested on Node 20.
+
 ## 2026-11-18 · The seeded demo circle
 
 **`docker compose up` seeds a fictional circle in round 3, with rounds 1 and 2 paid and proven.** A one-shot `seed` service (`scripts/seed`) publishes it to the local relay and prints a view-only invite link plus one demo login per member (`docker compose logs seed`). Five members (Amina, Baraka, Wanjiru, Otieno, Fatou) pay 1,000 KES a month to `<name>@example.com`, a domain reserved by RFC 2606, so no address or phone number belongs to anyone real. Round 1 has one late payment; round 3 opened two or three days before the seed ran, with Amina and Otieno paid and Baraka and Fatou still to pay.
@@ -122,7 +138,7 @@ Rota needs no database, `docker compose up` stays app + relay, and no Rota serve
 
 ## 2026-11-14 · Circles, amounts and paying an address
 
-The circle model, price conversion and invoice checks live in `packages/circles` (`@rota/circles`), pure TypeScript that the web app, a seed script or a server can share. `@rota/receipts` stays small, because it's meant to be published on its own.
+The circle model, price conversion and invoice checks live in `packages/circles` (`@rota/circles`), pure TypeScript that the web app, a seed script or a server can share. `lightning-receipts` (`packages/receipts`) stays small, because it's meant to be published on its own.
 
 **The recipient doesn't pay into their own round.** Members pay the recipient directly, so paying yourself would only cost fees. A round's pot is (members − 1) × contribution, and a circle of n members has n rounds in payout order.
 
@@ -168,7 +184,7 @@ Run on 2026-11-14 from a Mac, sending a browser `Origin` header. No payment was 
 
 **Layout: a pnpm workspace.** `apps/web` is the Next.js PWA; `packages/receipts` is the receipt checker. The checker is meant to ship as its own MIT package that any Lightning app can use, so it lives in its own folder with its own tests from the first commit. Until it is published it is marked `private` and exports its TypeScript source; the web app consumes it through the workspace.
 
-**Package name: `@rota/receipts`,** if the `rota` scope can be registered on npm before publishing. If not, it gets an unscoped name.
+**Package name: `@rota/receipts`,** if the `rota` scope can be registered on npm before publishing. If not, it gets an unscoped name. *Superseded 18 Nov: published as `lightning-receipts` (see "The receipt checker on npm").*
 
 **Next.js 16.4.6, React 19.3, Tailwind 4.3, Node 24.** The current stable releases; Node 24 is the active LTS.
 

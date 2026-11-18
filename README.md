@@ -37,7 +37,7 @@ pnpm build
 | Folder | What it is |
 |---|---|
 | `apps/web` | The Next.js PWA |
-| `packages/receipts` | The receipt checker: proves a Lightning payment reached a specific address |
+| `packages/receipts` | The receipt checker, `lightning-receipts` on npm: proves a Lightning payment reached a specific address ([its README](packages/receipts/README.md)) |
 | `packages/records` | The circle on Nostr: its definition, joins and roster (kinds 3571–3573) and one signed receipt per payment (kind 3570), all NIP-44 encrypted on the circle's relay |
 | `scripts/seed` | The demo seed: publishes the fictional circle and prints its links (`pnpm --filter @rota/seed start` with the relay running) |
 
