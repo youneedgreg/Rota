@@ -12,10 +12,10 @@ export default function WalletPage() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-10">
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-bold tracking-tight">
           <T k="wallet.title" />
         </h1>
-        <p className="leading-7 opacity-80">
+        <p className="leading-7 text-muted">
           <T k="wallet.intro" />
         </p>
       </header>

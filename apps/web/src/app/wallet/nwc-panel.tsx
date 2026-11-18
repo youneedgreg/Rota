@@ -16,10 +16,8 @@ import {
 } from "@/lib/nwc";
 import { useT } from "@/lib/lang";
 import { UiError } from "@/lib/messages";
+import { button, input, secondary } from "@/lib/ui";
 
-const button = "min-h-12 rounded-lg bg-foreground px-4 font-medium text-background disabled:opacity-50";
-const secondary = "min-h-12 rounded-lg border border-current px-4 font-medium disabled:opacity-50";
-const input = "min-h-12 w-full rounded-lg border border-current/30 bg-transparent px-3";
 
 function Limits({ limits }: { limits: ConnectionReport }) {
   const { t, num } = useT();
@@ -42,9 +40,9 @@ export function NwcPanel() {
   const { t } = useT();
 
   return (
-    <section className="space-y-4 rounded-xl border border-current/20 p-4">
+    <section className="space-y-4 rounded-2xl border border-line bg-surface p-4 shadow-sm">
       <h2 className="text-xl font-medium">{t("nwc.title")}</h2>
-      <p className="leading-7 opacity-80">
+      <p className="leading-7 text-muted">
         {t("nwc.intro")}
       </p>
       {view === "loading" && <p>{t("common.loading")}</p>}
@@ -117,14 +115,14 @@ function Connect({ onSaved }: { onSaved: () => void }) {
         <span>{t("nwc.contribution")}</span>
         <input className={input} inputMode="numeric" value={sats} onChange={(e) => setSats(e.target.value)} />
       </label>
-      {validAmount && <p className="opacity-80">{t("nwc.capNote", { cap: num(capSats(contribution)) })}</p>}
+      {validAmount && <p className="text-muted">{t("nwc.capNote", { cap: num(capSats(contribution)) })}</p>}
       <label className="block space-y-2">
         <span>{t("nwc.pinLock")}</span>
         <input className={input} type="password" value={pin} onChange={(e) => setPin(e.target.value)} autoComplete="new-password" />
       </label>
-      <fieldset className="space-y-3 rounded-lg border border-current/20 p-3">
+      <fieldset className="space-y-3 rounded-xl border border-line bg-background p-3">
         <legend className="px-1 font-medium">{t("nwc.albyWeb")}</legend>
-        <p className="opacity-80">{t("nwc.albyWebNote")}</p>
+        <p className="text-muted">{t("nwc.albyWebNote")}</p>
         <label className="block space-y-2">
           <span>{t("nwc.cycleEnds")}</span>
           <input className={input} type="date" value={until} onChange={(e) => setUntil(e.target.value)} />
@@ -137,10 +135,10 @@ function Connect({ onSaved }: { onSaved: () => void }) {
           {t(busy ? "nwc.waiting" : "nwc.connectAlby")}
         </button>
       </fieldset>
-      <fieldset className="space-y-3 rounded-lg border border-current/20 p-3">
+      <fieldset className="space-y-3 rounded-xl border border-line bg-background p-3">
         <legend className="px-1 font-medium">{t("nwc.other")}</legend>
-        <p className="opacity-80">{t("nwc.otherText")}</p>
-        <p className="opacity-80">{t("nwc.albyAppSteps")}</p>
+        <p className="text-muted">{t("nwc.otherText")}</p>
+        <p className="text-muted">{t("nwc.albyAppSteps")}</p>
         <label className="block space-y-2">
           <span>{t("nwc.connection")}</span>
           <textarea
@@ -157,7 +155,7 @@ function Connect({ onSaved }: { onSaved: () => void }) {
         </button>
       </fieldset>
       {error && (
-        <p role="alert" className="font-medium text-red-700 dark:text-red-400">
+        <p role="alert" className="font-medium text-bad">
           {error}
         </p>
       )}
@@ -190,7 +188,7 @@ function Unlock({ onOpen, onForget }: { onOpen: (client: NWCClient) => void; onF
         <input className={input} type="password" value={pin} onChange={(e) => setPin(e.target.value)} autoComplete="current-password" />
       </label>
       {error && (
-        <p role="alert" className="font-medium text-red-700 dark:text-red-400">
+        <p role="alert" className="font-medium text-bad">
           {error}
         </p>
       )}
@@ -276,12 +274,12 @@ function Connected({ client, onClose }: { client: NWCClient; onClose: () => void
           />
         </label>
         {error && (
-          <p role="alert" className="font-medium text-red-700 dark:text-red-400">
+          <p role="alert" className="font-medium text-bad">
             {error}
           </p>
         )}
         {result && (
-          <p role="status" className="font-medium text-green-800 dark:text-green-400">
+          <p role="status" className="font-medium text-ok">
             {result}
           </p>
         )}

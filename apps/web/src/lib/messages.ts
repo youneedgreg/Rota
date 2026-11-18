@@ -27,6 +27,11 @@ const en = {
   // home
   "home.tagline":
     "A tontine with no treasurer. Each member pays that round's recipient directly over Lightning, and every payment leaves a receipt nobody can fake.",
+  "home.headline": "Save together. No treasurer.",
+  "home.how.title": "How it works",
+  "home.how.1": "Start a circle and share one invite link.",
+  "home.how.2": "Each round, every member pays that round's recipient from their own phone.",
+  "home.how.3": "Every payment leaves a receipt anyone in the circle can check.",
   "home.start": "Start a circle",
   "home.wallet": "Wallet",
   "home.checksTitle": "Every receipt passes four checks",
@@ -313,6 +318,11 @@ const fr: Record<MessageKey, string> = {
 
   "home.tagline":
     "Une tontine sans trésorier. Chaque membre paie directement le bénéficiaire du tour via Lightning, et chaque paiement laisse un reçu que personne ne peut falsifier.",
+  "home.headline": "Épargner ensemble. Sans trésorier.",
+  "home.how.title": "Comment ça marche",
+  "home.how.1": "Créez une tontine et partagez un seul lien d'invitation.",
+  "home.how.2": "À chaque tour, chaque membre paie le bénéficiaire du tour depuis son propre téléphone.",
+  "home.how.3": "Chaque paiement laisse un reçu que tout membre de la tontine peut vérifier.",
   "home.start": "Créer une tontine",
   "home.wallet": "Portefeuille",
   "home.checksTitle": "Chaque reçu passe quatre vérifications",
