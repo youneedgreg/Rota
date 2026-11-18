@@ -271,6 +271,15 @@ const en = {
   "err.noConnection": "No wallet is connected on this device.",
   "err.noWallet": "There's no wallet on this device yet.",
   "err.noBreezKey": "This copy of Rota has no Breez API key, so the built-in wallet can't start.",
+  "demo.title": "Demo login",
+  "demo.intro": "This link lets you act as a fictional member of Rota's local demo circle, in this browser.",
+  "demo.public": "Demo keys are public: anyone running the demo has them. Never use a demo login with real money.",
+  "demo.localOnly": "Demo logins work only in the local demo (regtest). This copy of Rota runs on mainnet, so the link was ignored.",
+  "demo.badLink": "This demo link is broken. Copy it again from the seed's output.",
+  "demo.notMember": "This key isn't a member of that circle.",
+  "demo.as": "You'll act as {name} in {circle}.",
+  "demo.replace": "This browser already has a Rota member key. Using the demo login replaces it, and the circles you joined with it will no longer recognise you here.",
+  "demo.use": "Use this demo login",
 } as const;
 
 export type MessageKey = keyof typeof en;
@@ -542,6 +551,15 @@ const fr: Record<MessageKey, string> = {
   "err.noConnection": "Aucun portefeuille n'est connecté sur cet appareil.",
   "err.noWallet": "Il n'y a pas encore de portefeuille sur cet appareil.",
   "err.noBreezKey": "Cette copie de Rota n'a pas de clé API Breez : le portefeuille intégré ne peut pas démarrer.",
+  "demo.title": "Connexion de démo",
+  "demo.intro": "Ce lien vous permet d'agir comme un membre fictif de la tontine de démo locale de Rota, dans ce navigateur.",
+  "demo.public": "Les clés de démo sont publiques : toute personne qui lance la démo les a. N'utilisez jamais une connexion de démo avec de l'argent réel.",
+  "demo.localOnly": "Les connexions de démo ne marchent que dans la démo locale (regtest). Cette copie de Rota tourne sur mainnet : le lien a été ignoré.",
+  "demo.badLink": "Ce lien de démo est cassé. Copiez-le à nouveau depuis la sortie du script.",
+  "demo.notMember": "Cette clé n'est pas membre de cette tontine.",
+  "demo.as": "Vous agirez comme {name} dans {circle}.",
+  "demo.replace": "Ce navigateur a déjà une clé de membre Rota. La connexion de démo la remplace, et les tontines rejointes avec elle ne vous reconnaîtront plus ici.",
+  "demo.use": "Utiliser cette connexion de démo",
 };
 
 export const LANGS = ["en", "fr"] as const;
