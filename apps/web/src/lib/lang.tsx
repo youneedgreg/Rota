@@ -4,6 +4,7 @@
 // language, else English. The server always renders English; the browser
 // switches after loading, without a hydration mismatch.
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { checkDetail, explainError } from "./errors";
 import { LANGS, localeOf, translate, type Lang, type MessageKey, type Vars } from "./messages";
@@ -58,12 +59,26 @@ export function useT() {
   return { lang, t, explain, detail, when, num };
 }
 
-/** Two buttons, English and Français, at the top of every page. Keeps <html lang> in step. */
+// Each page's tab title. The server renders the English one from the page's
+// metadata; this switches it with the language.
+const PAGE_TITLES: Record<string, MessageKey> = {
+  "/": "page.home",
+  "/circles/new": "page.new",
+  "/circle": "page.circle",
+  "/wallet": "page.wallet",
+  "/track-record": "page.track",
+  "/demo": "page.demo",
+};
+
+/** Two buttons, English and Français, at the top of every page. Keeps <html lang> and the tab title in step. */
 export function LanguageSwitch() {
   const { lang, t } = useT();
+  const pathname = usePathname();
   useEffect(() => {
     document.documentElement.lang = lang;
-  }, [lang]);
+    const title = PAGE_TITLES[pathname];
+    if (title) document.title = t(title);
+  }, [lang, pathname, t]);
   return (
     <nav aria-label={t("lang.label")} className="mx-auto flex w-full max-w-xl justify-end gap-1 px-4 pt-3 text-sm">
       {(
