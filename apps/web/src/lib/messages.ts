@@ -6,6 +6,7 @@
 const en = {
   // shared
   "common.loading": "Loading…",
+  "common.testBanner": "Demo copy on the test network: coins have no value and no real money moves here.",
   "common.continue": "Continue",
   "common.back": "Back",
   "common.unlock": "Unlock",
@@ -168,6 +169,7 @@ const en = {
   "pay.setupFirst": "Set up a wallet first: Rota's built-in one, or connect your own with a monthly limit.",
   "pay.setupButton": "Set up a wallet",
   "pay.intro": "Your phone fetches the recipient's invoice, checks it, and pays it directly. Rota never holds the money.",
+  "pay.regtest": "Test network: Lightning payments don't work here, so Pay stops with an error. Verify, Settle and the track record all work.",
   "pay.from": "Pay from",
   "pay.builtIn": "Rota's built-in wallet",
   "pay.nwc": "Your own wallet (connected)",
@@ -284,10 +286,10 @@ const en = {
   "err.noWallet": "There's no wallet on this device yet.",
   "err.noBreezKey": "This copy of Rota has no Breez API key, so the built-in wallet can't start.",
   "demo.title": "Demo login",
-  "demo.intro": "This link lets you act as a fictional member of Rota's local demo circle, in this browser.",
-  "demo.public": "Demo keys are public: anyone running the demo has them. Never use a demo login with real money.",
-  "demo.localOnly": "Demo logins work only in the local demo (regtest). This copy of Rota runs on mainnet, so the link was ignored.",
-  "demo.badLink": "This demo link is broken. Copy it again from the seed's output.",
+  "demo.intro": "This link lets you act as a fictional member of Rota's demo circle, in this browser.",
+  "demo.public": "Demo keys are public: anyone with the demo links has them. Never use a demo login with real money.",
+  "demo.localOnly": "Demo logins work only in a demo copy of Rota on the test network (regtest). This copy runs on mainnet, so the link was ignored.",
+  "demo.badLink": "This demo link is broken. Copy it again from where you found it.",
   "demo.notMember": "This key isn't a member of that circle.",
   "demo.as": "You'll act as {name} in {circle}.",
   "demo.replace": "This browser already has a Rota member key. Using the demo login replaces it, and the circles you joined with it will no longer recognise you here.",
@@ -298,6 +300,7 @@ export type MessageKey = keyof typeof en;
 
 const fr: Record<MessageKey, string> = {
   "common.loading": "Chargement…",
+  "common.testBanner": "Copie de démo sur le réseau de test : les pièces n'ont aucune valeur et aucun argent réel ne circule ici.",
   "common.continue": "Continuer",
   "common.back": "Retour",
   "common.unlock": "Déverrouiller",
@@ -460,6 +463,8 @@ const fr: Record<MessageKey, string> = {
   "pay.setupButton": "Configurer un portefeuille",
   "pay.intro":
     "Votre téléphone récupère la facture du bénéficiaire, la vérifie et la paie directement. Rota ne détient jamais l'argent.",
+  "pay.regtest":
+    "Réseau de test : les paiements Lightning ne fonctionnent pas ici, donc Payer s'arrête sur une erreur. Vérifier, Régler et l'historique fonctionnent.",
   "pay.from": "Payer depuis",
   "pay.builtIn": "Le portefeuille intégré de Rota",
   "pay.nwc": "Votre propre portefeuille (connecté)",
@@ -576,10 +581,10 @@ const fr: Record<MessageKey, string> = {
   "err.noWallet": "Il n'y a pas encore de portefeuille sur cet appareil.",
   "err.noBreezKey": "Cette copie de Rota n'a pas de clé API Breez : le portefeuille intégré ne peut pas démarrer.",
   "demo.title": "Connexion de démo",
-  "demo.intro": "Ce lien vous permet d'agir comme un membre fictif de la tontine de démo locale de Rota, dans ce navigateur.",
-  "demo.public": "Les clés de démo sont publiques : toute personne qui lance la démo les a. N'utilisez jamais une connexion de démo avec de l'argent réel.",
-  "demo.localOnly": "Les connexions de démo ne marchent que dans la démo locale (regtest). Cette copie de Rota tourne sur mainnet : le lien a été ignoré.",
-  "demo.badLink": "Ce lien de démo est cassé. Copiez-le à nouveau depuis la sortie du script.",
+  "demo.intro": "Ce lien vous permet d'agir comme un membre fictif de la tontine de démo de Rota, dans ce navigateur.",
+  "demo.public": "Les clés de démo sont publiques : toute personne qui a les liens de démo les a. N'utilisez jamais une connexion de démo avec de l'argent réel.",
+  "demo.localOnly": "Les connexions de démo ne marchent que dans une copie de démo de Rota sur le réseau de test (regtest). Cette copie tourne sur mainnet : le lien a été ignoré.",
+  "demo.badLink": "Ce lien de démo est cassé. Copiez-le à nouveau depuis l'endroit où vous l'avez trouvé.",
   "demo.notMember": "Cette clé n'est pas membre de cette tontine.",
   "demo.as": "Vous agirez comme {name} dans {circle}.",
   "demo.replace": "Ce navigateur a déjà une clé de membre Rota. La connexion de démo la remplace, et les tontines rejointes avec elle ne vous reconnaîtront plus ici.",

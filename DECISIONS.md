@@ -2,6 +2,16 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-19 · A hosted demo copy on the test network
+
+**A second hosted copy runs on regtest with the seeded demo circle,** so anyone can try Rota without sats or Docker. It is a separate Vercel project built from the same `apps/web`, with `NEXT_PUBLIC_BREEZ_NETWORK=regtest` and no Breez key (regtest doesn't need one). The mainnet copy stays as it is. A separate site also keeps the two apart in the browser: demo logins replace the member key a site saves, and each site saves its own.
+
+**Its relay is `wss://relay.primal.net`, not the mainnet copy's `nos.lol`.** The demo's fake-paid receipts should never sit next to real circles. On one relay, circles are kept apart by their keys, so sharing would be safe, but a second relay keeps that rule plain. Tested 19 Nov with a throwaway key: kinds 3570–3575 accepted and read back, a 66 KB event accepted (nos.lol refuses that size), and its NIP-11 page lists strfry, 1 MB messages and at most 500 events per request, matching Rota's own cap. relay.damus.io didn't connect; offchain.pub refuses large events from keys outside its web of trust. Retention isn't known.
+
+**Every page on a regtest build says it's a demo copy on the test network,** and the Pay form says up front that Pay stops with an error there, because regtest has no Lightning. Verify, Settle and the track record work in full.
+
+**Known limits.** The demo keys are in public links, so anyone can publish to the demo circle as a demo member; Verify flags anything that fails the checks, but the round view could fill with junk. The seeded amounts are judged against ±20% of the day's price, and seeding again keeps the first circle, so after a big price move the demo needs a fresh relay or a new seed label.
+
 ## 2026-11-18 · The hosted copy: Vercel and a public relay
 
 **The web app is hosted on Vercel's free plan** at https://rota-prod.vercel.app, built from `apps/web` on `main`, on mainnet. Rota has no backend, so the static pages and the browser code are the whole app. The `standalone` output the Docker image needs didn't get in the way of Vercel's build.
@@ -36,7 +46,7 @@ Not tested on Node 20.
 
 **Seeding again keeps the first circle.** The NIP-44 encryption makes event ids differ each run, so the seed looks for a definition from the demo organizer's key on the relay and, if it finds one, prints that circle's links and publishes nothing. The links stay the same until the relay's volume is removed.
 
-**Demo logins replace the browser's member key, on regtest only.** A login link is `/demo#<member secret>.<invite>`. The page shows who you'll be and asks before replacing an existing member key. On mainnet the page refuses every link: a link that swaps in a key someone else knows would let them sign as you. The hosted judge path needs its own way in (step J).
+**Demo logins replace the browser's member key, on regtest only.** A login link is `/demo#<member secret>.<invite>`. The page shows who you'll be and asks before replacing an existing member key. On mainnet the page refuses every link: a link that swaps in a key someone else knows would let them sign as you. That's why the hosted demo is a separate regtest copy (see 2026-11-19).
 
 **The seed runs with `tsx` 4.23.15** (published 20 Sep 2026): the packages import their files without extensions, which Node's own TypeScript support doesn't resolve.
 
