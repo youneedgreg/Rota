@@ -61,12 +61,12 @@ flowchart LR
   price["Price APIs<br/>CoinGecko, Coinbase"]
   recipient["Recipient's wallet<br/>or M-Pesa via Tando"]
 
-  host -- "app code" --> app
-  app <-- "circle, joins, receipts" --> relay
-  app -- "fetch and check invoice" --> lnurl
-  app -- "today's price" --> price
-  app -- "pay this exact invoice" --> wallet
-  wallet == "Lightning payment: the only place money moves" ==> recipient
+  host -->|"app code"| app
+  app <-->|"circle, joins, receipts"| relay
+  app -->|"fetch and check invoice"| lnurl
+  app -->|"today's price"| price
+  app -->|"pay this exact invoice"| wallet
+  wallet ==>|"Lightning payment, the only place money moves"| recipient
 ```
 
 - **There is no Rota server.** The host serves static files. There is no database, no accounts and no API routes.
