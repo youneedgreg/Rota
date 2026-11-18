@@ -10,6 +10,9 @@ import { useT } from "@/lib/lang";
 import type { MessageKey } from "@/lib/messages";
 import { button, field, input, maskAddress, pill, secondary } from "@/lib/ui";
 
+/** Regtest has no Lightning: say so before anyone tries to pay. */
+const testNetwork = process.env.NEXT_PUBLIC_BREEZ_NETWORK === "regtest";
+
 const REFRESH_MS = 10_000;
 const noSubscribe = () => () => {};
 
@@ -400,6 +403,7 @@ function Pay({
         <h2 id="pay" className="text-xl font-semibold">
           {label}
         </h2>
+        {testNetwork && <p className="rounded-lg border border-warn/50 bg-warn/10 p-3 text-warn">{t("pay.regtest")}</p>}
         <p className="leading-7">{t("pay.setupFirst")}</p>
         <Link href="/wallet" className={`${button} inline-flex items-center`}>
           {t("pay.setupButton")}
@@ -414,6 +418,8 @@ function Pay({
         {label}
       </h2>
       <p className="leading-7 text-muted">{t("pay.intro")}</p>
+      {testNetwork && <p className="rounded-lg border border-warn/50 bg-warn/10 p-3 text-warn">{t("pay.regtest")}</p>}
+
       {has.builtIn && has.nwc && (
         <fieldset className="space-y-2">
           <legend>{t("pay.from")}</legend>

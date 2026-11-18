@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LanguageSwitch } from "@/lib/lang";
+import { LanguageSwitch, T } from "@/lib/lang";
 
 /** Rota's mark: seats around a circle, the round's recipient lit. */
 export function Mark({ className = "size-7" }: { className?: string }) {
@@ -17,14 +17,24 @@ export function Mark({ className = "size-7" }: { className?: string }) {
   );
 }
 
+/** Built for the test network (regtest): the local demo and the hosted demo copy. */
+const testNetwork = process.env.NEXT_PUBLIC_BREEZ_NETWORK === "regtest";
+
 export function SiteHeader() {
   return (
-    <header className="mx-auto flex w-full max-w-xl items-center justify-between gap-2 px-4 pt-3">
-      <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-lg font-bold tracking-tight">
-        <Mark />
-        Rota
-      </Link>
-      <LanguageSwitch />
-    </header>
+    <>
+      {testNetwork && (
+        <p className="border-b border-warn/50 bg-warn/10 px-4 py-2 text-center text-sm text-warn">
+          <T k="common.testBanner" />
+        </p>
+      )}
+      <header className="mx-auto flex w-full max-w-xl items-center justify-between gap-2 px-4 pt-3">
+        <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-lg font-bold tracking-tight">
+          <Mark />
+          Rota
+        </Link>
+        <LanguageSwitch />
+      </header>
+    </>
   );
 }

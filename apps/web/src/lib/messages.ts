@@ -6,6 +6,7 @@
 const en = {
   // shared
   "common.loading": "Loading…",
+  "common.testBanner": "Demo copy on the test network: coins have no value and no real money moves here.",
   "common.continue": "Continue",
   "common.back": "Back",
   "common.unlock": "Unlock",
@@ -168,6 +169,7 @@ const en = {
   "pay.setupFirst": "Set up a wallet first: Rota's built-in one, or connect your own with a monthly limit.",
   "pay.setupButton": "Set up a wallet",
   "pay.intro": "Your phone fetches the recipient's invoice, checks it, and pays it directly. Rota never holds the money.",
+  "pay.regtest": "Test network: Lightning payments don't work here, so Pay stops with an error. Verify, Settle and the track record all work.",
   "pay.from": "Pay from",
   "pay.builtIn": "Rota's built-in wallet",
   "pay.nwc": "Your own wallet (connected)",
@@ -298,6 +300,7 @@ export type MessageKey = keyof typeof en;
 
 const fr: Record<MessageKey, string> = {
   "common.loading": "Chargement…",
+  "common.testBanner": "Copie de démo sur le réseau de test : les pièces n'ont aucune valeur et aucun argent réel ne circule ici.",
   "common.continue": "Continuer",
   "common.back": "Retour",
   "common.unlock": "Déverrouiller",
@@ -460,6 +463,8 @@ const fr: Record<MessageKey, string> = {
   "pay.setupButton": "Configurer un portefeuille",
   "pay.intro":
     "Votre téléphone récupère la facture du bénéficiaire, la vérifie et la paie directement. Rota ne détient jamais l'argent.",
+  "pay.regtest":
+    "Réseau de test : les paiements Lightning ne fonctionnent pas ici, donc Payer s'arrête sur une erreur. Vérifier, Régler et l'historique fonctionnent.",
   "pay.from": "Payer depuis",
   "pay.builtIn": "Le portefeuille intégré de Rota",
   "pay.nwc": "Votre propre portefeuille (connecté)",
