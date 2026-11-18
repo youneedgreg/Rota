@@ -81,7 +81,7 @@ export function NewCircleForm() {
             autoComplete="off"
             required
           />
-          <span className="text-sm opacity-70">
+          <span className="text-sm text-muted">
             {t("form.payoutHelp")}
           </span>
         </label>
@@ -124,7 +124,7 @@ export function NewCircleForm() {
             max={MAX_MEMBERS}
             required
           />
-          <span className="text-sm opacity-70">
+          <span className="text-sm text-muted">
             {t("form.seatsHelp", { min: MIN_MEMBERS, max: MAX_MEMBERS })}
           </span>
         </label>
@@ -151,7 +151,7 @@ export function NewCircleForm() {
         <label className={field}>
           <span>{t("form.firstRound")}</span>
           <input className={input} type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-          <span className="text-sm opacity-70">{t("form.firstRoundHelp")}</span>
+          <span className="text-sm text-muted">{t("form.firstRoundHelp")}</span>
         </label>
         <div className="grid grid-cols-2 gap-4">
           {pace === "demo" && (
@@ -168,7 +168,7 @@ export function NewCircleForm() {
       </fieldset>
 
       {error && (
-        <p role="alert" className="rounded-lg border border-current p-3">
+        <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-3 text-bad">
           {error}
         </p>
       )}

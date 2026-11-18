@@ -78,7 +78,7 @@ export function CircleScreen() {
   return (
     <>
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">{draft.name}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{draft.name}</h1>
         <p className="leading-7">
           {t("circle.contribution", { amount: num(draft.contribution), currency: draft.currency })} {paceText(view, tools)}.
         </p>
@@ -88,7 +88,7 @@ export function CircleScreen() {
 
       {view.full && <RoundPanel invite={invite} view={view} me={me} />}
 
-      <section aria-labelledby="seats" className="space-y-3 rounded-xl border border-current/20 p-4">
+      <section aria-labelledby="seats" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
         <h2 id="seats" className="text-xl font-medium">
           {t("circle.seats", { taken: view.members.length, total: draft.seats })}
         </h2>
@@ -98,11 +98,11 @@ export function CircleScreen() {
               <span className="font-medium">{m.name}</span>
               {m.pubkey === view.organizer && t("circle.organizer")}
               {m.pubkey === me && t("circle.you")}
-              <span className="block text-sm opacity-70">{t("circle.paidAt", { address: maskAddress(m.payoutAddress) })}</span>
+              <span className="block text-sm text-muted">{t("circle.paidAt", { address: maskAddress(m.payoutAddress) })}</span>
             </li>
           ))}
         </ol>
-        <p className="text-sm opacity-70">
+        <p className="text-sm text-muted">
           {t(view.sealed ? "circle.sealed" : view.full ? "circle.fullUnsealed" : "circle.filling")}
         </p>
       </section>
@@ -118,11 +118,11 @@ function Invite({ invite }: { invite: string }) {
   const { t } = useT();
   const url = inviteUrl(invite);
   return (
-    <section aria-labelledby="invite" className="space-y-3 rounded-xl border border-current/20 p-4">
+    <section aria-labelledby="invite" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
       <h2 id="invite" className="text-xl font-medium">
         {t("invite.title")}
       </h2>
-      <p className="leading-7 opacity-80">
+      <p className="leading-7 text-muted">
         {t("invite.warning")}
       </p>
       <input className={`${input} font-mono text-sm`} readOnly value={url} onFocus={(e) => e.target.select()} />
@@ -164,7 +164,7 @@ function Join({ invite, onJoined }: { invite: string; onJoined: () => Promise<vo
   }
 
   return (
-    <form onSubmit={submit} aria-labelledby="join" className="space-y-4 rounded-xl border border-current/20 p-4">
+    <form onSubmit={submit} aria-labelledby="join" className="space-y-4 rounded-2xl border border-line bg-surface p-4 shadow-sm">
       <h2 id="join" className="text-xl font-medium">
         {t("join.title")}
       </h2>
@@ -184,7 +184,7 @@ function Join({ invite, onJoined }: { invite: string; onJoined: () => Promise<vo
         />
       </label>
       {error && (
-        <p role="alert" className="rounded-lg border border-current p-3">
+        <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-3 text-bad">
           {error}
         </p>
       )}

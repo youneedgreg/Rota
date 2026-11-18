@@ -39,8 +39,8 @@ export function DemoScreen() {
 
   const header = (
     <header className="space-y-2">
-      <h1 className="text-3xl font-semibold tracking-tight">{t("demo.title")}</h1>
-      <p className="leading-7 opacity-80">{t("demo.intro")}</p>
+      <h1 className="text-3xl font-bold tracking-tight">{t("demo.title")}</h1>
+      <p className="leading-7 text-muted">{t("demo.intro")}</p>
     </header>
   );
 
@@ -73,10 +73,10 @@ export function DemoScreen() {
 
   return page(
     <>
-      <p className="rounded-lg border border-current/40 p-3 leading-7">{t("demo.public")}</p>
+      <p className="rounded-lg border border-line p-3 leading-7">{t("demo.public")}</p>
       <p className="leading-7">{t("demo.as", { name: member.name, circle: view.draft.name })}</p>
       {replacing && (
-        <p role="alert" className="rounded-lg border border-current p-3 leading-7">
+        <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-3 text-bad leading-7">
           {t("demo.replace")}
         </p>
       )}

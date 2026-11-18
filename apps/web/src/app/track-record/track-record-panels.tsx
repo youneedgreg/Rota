@@ -43,12 +43,12 @@ export function ExportPanel() {
   }
 
   return (
-    <section aria-labelledby="export" className="space-y-3 rounded-xl border border-current/20 p-4">
+    <section aria-labelledby="export" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
       <h2 id="export" className="text-xl font-medium">
         {t("track.exportTitle")}
       </h2>
       <p className="leading-7">{t("track.exportText")}</p>
-      <p className="rounded-lg border border-current/40 p-3 leading-7">{t("track.warning")}</p>
+      <p className="rounded-lg border border-line p-3 leading-7">{t("track.warning")}</p>
       {made && (
         <p role="status">
           {made.receipts > 0
@@ -57,7 +57,7 @@ export function ExportPanel() {
         </p>
       )}
       {error && (
-        <p role="alert" className="rounded-lg border border-current p-3">
+        <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-3 text-bad">
           {t("track.error")}
         </p>
       )}
@@ -98,7 +98,7 @@ export function CheckPanel() {
   }
 
   return (
-    <section aria-labelledby="check" className="space-y-3 rounded-xl border border-current/20 p-4">
+    <section aria-labelledby="check" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
       <h2 id="check" className="text-xl font-medium">
         {t("track.checkTitle")}
       </h2>
@@ -108,12 +108,12 @@ export function CheckPanel() {
         <input type="file" accept="application/json,.json" onChange={open} className="block w-full min-h-12" />
       </label>
       {bad && (
-        <p role="alert" className="rounded-lg border border-current p-3">
+        <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-3 text-bad">
           {t("track.badFile")}
         </p>
       )}
       {result && !result.ok && (
-        <p role="alert" className="rounded-lg border border-current p-3">
+        <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-3 text-bad">
           {detail(result.problem ?? "")}
         </p>
       )}
@@ -147,7 +147,7 @@ export function CheckPanel() {
               </ul>
             </div>
           ))}
-          <p className="text-sm leading-6 opacity-70">{t("track.stated")}</p>
+          <p className="text-sm leading-6 text-muted">{t("track.stated")}</p>
         </div>
       )}
     </section>
@@ -173,12 +173,12 @@ function TrackedRow({ receipt }: { receipt: TrackedReceipt }) {
           <span className="font-medium">{receipt.round ? t("track.round", { n: receipt.round }) : "?"}</span>
           {badge && <span className="ml-2">· {badge}</span>}
           {receipt.sats !== undefined && receipt.address && (
-            <span className="block text-sm opacity-70">
+            <span className="block text-sm text-muted">
               {t("track.paidTo", { sats: t("common.sats", { n: num(receipt.sats) }), address: maskAddress(receipt.address) })}
             </span>
           )}
           {receipt.invoiceIssuedAt && (
-            <span className="block text-sm opacity-70">{t("track.issued", { when: when(receipt.invoiceIssuedAt) })}</span>
+            <span className="block text-sm text-muted">{t("track.issued", { when: when(receipt.invoiceIssuedAt) })}</span>
           )}
         </span>
         <button type="button" className={secondary} aria-expanded={shown} onClick={() => setShown(!shown)}>
@@ -186,7 +186,7 @@ function TrackedRow({ receipt }: { receipt: TrackedReceipt }) {
         </button>
       </div>
       {shown && (
-        <ul className="space-y-1 rounded-lg border border-current/20 p-3">
+        <ul className="space-y-1 rounded-xl border border-line bg-background p-3">
           {receipt.checks.map((c) => (
             <Line
               key={c.check}
@@ -212,7 +212,7 @@ function Line({ ok, label, detail }: { ok: boolean; label: string; detail: strin
       <span>
         <span className="sr-only">{t(ok ? "receipts.passes" : "receipts.failsPrefix")}</span>
         {label}
-        <span className="block text-sm opacity-70">{detail}</span>
+        <span className="block text-sm text-muted">{detail}</span>
       </span>
     </li>
   );

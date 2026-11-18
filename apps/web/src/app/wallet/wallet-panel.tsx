@@ -16,6 +16,7 @@ import {
 } from "@/lib/wallet";
 import { useT } from "@/lib/lang";
 import { UiError } from "@/lib/messages";
+import { button, input, secondary } from "@/lib/ui";
 
 type Step =
   | { name: "loading" }
@@ -26,18 +27,14 @@ type Step =
   | { name: "locked" }
   | { name: "open"; sdk: BreezSdk };
 
-const button =
-  "min-h-12 rounded-lg bg-foreground px-4 font-medium text-background disabled:opacity-50";
-const secondary = "min-h-12 rounded-lg border border-current px-4 font-medium disabled:opacity-50";
-const input = "min-h-12 w-full rounded-lg border border-current/30 bg-transparent px-3";
 
 function Card({ children }: { children: ReactNode }) {
-  return <section className="space-y-4 rounded-xl border border-current/20 p-4">{children}</section>;
+  return <section className="space-y-4 rounded-2xl border border-line bg-surface p-4 shadow-sm">{children}</section>;
 }
 
 function ErrorText({ text }: { text: string | null }) {
   return text ? (
-    <p role="alert" className="font-medium text-red-700 dark:text-red-400">
+    <p role="alert" className="font-medium text-bad">
       {text}
     </p>
   ) : null;
@@ -56,7 +53,7 @@ export function WalletPanel() {
   return (
     <div className="space-y-4">
       {walletNetwork() === "regtest" && (
-        <p className="rounded-lg bg-amber-100 p-3 text-amber-900">
+        <p className="rounded-lg border border-warn/50 bg-warn/10 p-3 text-warn">
           {t("wallet.regtest")}
         </p>
       )}
@@ -99,8 +96,8 @@ function Backup({ words, onDone }: { words: string; onDone: () => void }) {
       </p>
       <ol className="grid grid-cols-2 gap-2 font-mono sm:grid-cols-3">
         {words.split(" ").map((word, i) => (
-          <li key={i} className="rounded-md border border-current/20 px-2 py-1">
-            <span className="opacity-60">{i + 1}.</span> {word}
+          <li key={i} className="rounded-md border border-line px-2 py-1">
+            <span className="text-muted">{i + 1}.</span> {word}
           </li>
         ))}
       </ol>
@@ -273,7 +270,7 @@ function OpenWallet({ sdk }: { sdk: BreezSdk }) {
     <div className="space-y-4">
       <Card>
         <h2 className="text-xl font-medium">{t("wallet.balance")}</h2>
-        <p className="text-3xl font-semibold" aria-live="polite">
+        <p className="text-3xl font-bold" aria-live="polite">
           {balance === null ? "…" : t("common.sats", { n: num(balance) })}
         </p>
         <ErrorText text={error} />
@@ -322,7 +319,7 @@ function Receive({ sdk }: { sdk: BreezSdk }) {
       </form>
       {invoice && (
         <div className="space-y-2">
-          <p className="break-all rounded-md border border-current/20 p-2 font-mono text-sm">{invoice}</p>
+          <p className="break-all rounded-md border border-line p-2 font-mono text-sm">{invoice}</p>
           <button className={secondary} onClick={() => navigator.clipboard.writeText(invoice)}>
             {t("wallet.copyInvoice")}
           </button>
@@ -377,7 +374,7 @@ function Pay({ sdk, onPaid }: { sdk: BreezSdk; onPaid: () => void }) {
         </label>
         <ErrorText text={error} />
         {result && (
-          <p role="status" className="font-medium text-green-800 dark:text-green-400">
+          <p role="status" className="font-medium text-ok">
             {result}
           </p>
         )}

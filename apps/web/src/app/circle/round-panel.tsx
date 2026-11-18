@@ -41,7 +41,7 @@ export function RoundPanel({ invite, view, me }: { invite: string; view: CircleV
   if (!circle) return null;
   if (!open || number === null) {
     return (
-      <section aria-labelledby="round" className="space-y-2 rounded-xl border border-current/20 p-4">
+      <section aria-labelledby="round" className="space-y-2 rounded-2xl border border-line bg-surface p-4 shadow-sm">
         <h2 id="round" className="text-xl font-medium">
           {t("round.title", { n: 1 })}
         </h2>
@@ -59,7 +59,7 @@ export function RoundPanel({ invite, view, me }: { invite: string; view: CircleV
               key={n}
               type="button"
               aria-current={n === number ? "true" : undefined}
-              className={`min-h-12 min-w-12 rounded-lg border px-3 ${n === number ? "bg-foreground text-background" : "border-current/60"}`}
+              className={`min-h-12 min-w-12 rounded-lg border px-3 ${n === number ? "bg-foreground text-background" : "border-line-strong"}`}
               onClick={() => setPicked(n === open.number ? null : n)}
             >
               {n}
@@ -119,7 +119,7 @@ function Round({
 
   return (
     <>
-      <section aria-labelledby="round" className="space-y-3 rounded-xl border border-current/20 p-4">
+      <section aria-labelledby="round" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
         <h2 id="round" className="text-xl font-medium">
           {t("round.titleOf", { n: number, total })}
         </h2>
@@ -193,17 +193,17 @@ function StateBadge({
       <span className="text-right">
         <span className="font-medium">{t("state.paid")}</span>
         {payer.onTime === false && t("state.paidLate")}
-        {payer.paidAt && <span className="block text-sm opacity-70">{when(payer.paidAt)}</span>}
-        {settled && <span className="block text-sm opacity-70">{t("state.settledNote")}</span>}
+        {payer.paidAt && <span className="block text-sm text-muted">{when(payer.paidAt)}</span>}
+        {settled && <span className="block text-sm text-muted">{t("state.settledNote")}</span>}
       </span>
     );
   }
   return (
     <span className="text-right">
-      <span className={payer.state === "late" ? "font-medium" : "opacity-70"}>
+      <span className={payer.state === "late" ? "font-medium" : "text-muted"}>
         {t(payer.state === "late" ? "state.late" : "state.pending")}
       </span>
-      {notCounted && <span className="block text-sm opacity-70">{t("state.notCounted")}</span>}
+      {notCounted && <span className="block text-sm text-muted">{t("state.notCounted")}</span>}
     </span>
   );
 }
@@ -255,7 +255,7 @@ function Settle({
   }
 
   return (
-    <form onSubmit={submit} aria-labelledby="settle" className="space-y-4 rounded-xl border border-current p-4">
+    <form onSubmit={submit} aria-labelledby="settle" className="space-y-4 rounded-2xl border-2 border-accent bg-surface p-4 shadow-sm">
       <h2 id="settle" className="text-xl font-medium">
         {t("settle.title")}
       </h2>
@@ -291,7 +291,7 @@ function Settle({
         );
       })}
       {state && (
-        <p role={state === "error" ? "alert" : "status"} className={state === "error" ? "rounded-lg border border-current p-3" : ""}>
+        <p role={state === "error" ? "alert" : "status"} className={state === "error" ? "rounded-lg border border-bad/50 bg-bad/10 p-3 text-bad" : ""}>
           {t(state === "saved" ? "settle.saved" : "settle.error")}
         </p>
       )}
@@ -345,7 +345,7 @@ function Pay({
 
   if (done) {
     return (
-      <section aria-labelledby="pay" className="space-y-2 rounded-xl border border-current p-4">
+      <section aria-labelledby="pay" className="space-y-2 rounded-2xl border-2 border-accent bg-surface p-4 shadow-sm">
         <h2 id="pay" className="text-xl font-medium">
           {t("pay.done")}
         </h2>
@@ -359,7 +359,7 @@ function Pay({
 
   if (!view.sealed) {
     return (
-      <p className="rounded-xl border border-current/20 p-4">
+      <p className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
         {t("pay.waitSeats")}
       </p>
     );
@@ -367,7 +367,7 @@ function Pay({
 
   if (!chosen) {
     return (
-      <section aria-labelledby="pay" className="space-y-3 rounded-xl border border-current/20 p-4">
+      <section aria-labelledby="pay" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
         <h2 id="pay" className="text-xl font-medium">
           {label}
         </h2>
@@ -380,11 +380,11 @@ function Pay({
   }
 
   return (
-    <form onSubmit={submit} aria-labelledby="pay" className="space-y-4 rounded-xl border border-current/20 p-4">
+    <form onSubmit={submit} aria-labelledby="pay" className="space-y-4 rounded-2xl border border-line bg-surface p-4 shadow-sm">
       <h2 id="pay" className="text-xl font-medium">
         {label}
       </h2>
-      <p className="leading-7 opacity-80">{t("pay.intro")}</p>
+      <p className="leading-7 text-muted">{t("pay.intro")}</p>
       {has.builtIn && has.nwc && (
         <fieldset className="space-y-2">
           <legend>{t("pay.from")}</legend>
@@ -413,7 +413,7 @@ function Pay({
         />
       </label>
       {error && (
-        <p role="alert" className="rounded-lg border border-current p-3">
+        <p role="alert" className="rounded-lg border border-bad/50 bg-bad/10 p-3 text-bad">
           {error}
         </p>
       )}
@@ -428,7 +428,7 @@ function Receipts({ receipts }: { receipts: CheckedReceipt[] }) {
   const { t } = useT();
   if (receipts.length === 0) return null;
   return (
-    <section aria-labelledby="receipts" className="space-y-3 rounded-xl border border-current/20 p-4">
+    <section aria-labelledby="receipts" className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
       <h2 id="receipts" className="text-xl font-medium">
         {t("receipts.title")}
       </h2>
@@ -452,7 +452,7 @@ function ReceiptRow({ receipt }: { receipt: CheckedReceipt }) {
         <span>
           <span className="font-medium">{who}</span>
           {content && (
-            <span className="block text-sm opacity-70">
+            <span className="block text-sm text-muted">
               {t("common.sats", { n: num(content.amountMsat / 1000n) })} · {when(new Date(content.paidAt * 1000))}
             </span>
           )}
@@ -462,7 +462,7 @@ function ReceiptRow({ receipt }: { receipt: CheckedReceipt }) {
         </button>
       </div>
       {shown && (
-        <div className="space-y-2 rounded-lg border border-current/20 p-3">
+        <div className="space-y-2 rounded-xl border border-line bg-background p-3">
           <p className="font-medium">{t(receipt.ok ? "receipts.allPass" : "receipts.fails")}</p>
           <ul className="space-y-1">
             {receipt.checks.map((c) => (
@@ -475,7 +475,7 @@ function ReceiptRow({ receipt }: { receipt: CheckedReceipt }) {
             ))}
             <CheckLine ok={receipt.member.ok} label={t("receipts.member")} detail={detail(receipt.member.detail)} />
           </ul>
-          <p className="text-sm opacity-70">{t("receipts.local")}</p>
+          <p className="text-sm text-muted">{t("receipts.local")}</p>
         </div>
       )}
     </li>
@@ -492,7 +492,7 @@ function CheckLine({ ok, label, detail }: { ok: boolean; label: string; detail: 
       <span>
         <span className="sr-only">{t(ok ? "receipts.passes" : "receipts.failsPrefix")}</span>
         {label}
-        <span className="block text-sm opacity-70">{detail}</span>
+        <span className="block text-sm text-muted">{detail}</span>
       </span>
     </li>
   );
