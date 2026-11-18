@@ -4,7 +4,7 @@ A tontine (or chama) where nobody holds the pot. Each round, every member pays t
 
 Built for the [Dakar Bitcoin Hack 2026](https://dakar-bitcoin-hack-2026.devpost.com/). MIT licensed.
 
-> **Status, 18 Nov 2026:** the whole flow runs locally on regtest with a seeded demo circle: create a circle, join, pay, verify, settle, export a track record. Rota is built for mainnet with small amounts, but **no real mainnet payment has been made through it yet**. The hosted copy is online at **https://rota-prod.vercel.app** (mainnet, relay `wss://nos.lol`), with no demo circle on it yet. Real rounds and the judge path will be added here.
+> **Status, 19 Nov 2026:** Rota runs on regtest with a seeded demo circle: create a circle, join, verify receipts, settle, export a track record. Paying needs mainnet, because regtest has no Lightning. **You can try it online at https://rota-gb7u.vercel.app** (test network, see below). Rota is built for mainnet with small amounts, and the mainnet copy is online at https://rota-prod.vercel.app, but **no real mainnet payment has been made through it yet**.
 
 <p>
   <img src="docs/screenshots/round.jpg" alt="Round 3 of the demo circle: two of four members paid, Baraka (you) still pending" width="200">
@@ -24,6 +24,21 @@ Rota removes the treasurer's job instead of digitising it:
 - **Recipients** in Kenya can be paid to their M-Pesa number through `<number>@bitcoin.co.ke`, a Lightning address run by Tando. This is checked with unpaid invoices; a real payout hasn't been made yet.
 
 I haven't run Rota with a real group yet, so this README gives no user or reach numbers.
+
+## Try it online (no install)
+
+A demo copy runs on the test network (regtest) at **https://rota-gb7u.vercel.app**, with the same fictional circle as the local demo on a public relay (`wss://relay.primal.net`). Every page says it's a demo copy; no real money moves.
+
+1. Open **[Baraka's demo login](https://rota-gb7u.vercel.app/demo#01bb38e41face0260261fd09e112f54075985a88d5450a3f69cf5b5c6069fcbc.8c3e5f23a6d9b3ec5e054d2e242e8098c94b7b8d0a94d420cbbd252d266ad061.6a5a735cbfbc5d355fd80dde8df36cec5f875980d6ea6fdf8ecb1c1b98808396)** (he still owes round 3) and press "Use this demo login".
+2. The circle opens on round 3. Two of four members have paid.
+3. Open round 1 and press **Verify** on any receipt to see its checks pass on your device.
+4. Export a **track record**, or create a built-in wallet on the Wallet page.
+
+Pay can't go through here: regtest has no Lightning, and the members' `@example.com` addresses don't answer. The Pay box says so.
+
+Other ways in: [view the circle without logging in](https://rota-gb7u.vercel.app/circle#8c3e5f23a6d9b3ec5e054d2e242e8098c94b7b8d0a94d420cbbd252d266ad061.6a5a735cbfbc5d355fd80dde8df36cec5f875980d6ea6fdf8ecb1c1b98808396) · [Amina](https://rota-gb7u.vercel.app/demo#5a3377b5d4d3dc30fa15560d5770e369682da15b55e04619f9a7abbf1186b7cf.8c3e5f23a6d9b3ec5e054d2e242e8098c94b7b8d0a94d420cbbd252d266ad061.6a5a735cbfbc5d355fd80dde8df36cec5f875980d6ea6fdf8ecb1c1b98808396) (organizer) · [Wanjiru](https://rota-gb7u.vercel.app/demo#2d5d9f21b5124df04d22f295bea7f89797446f8872b394c8021db1460ee2aaad.8c3e5f23a6d9b3ec5e054d2e242e8098c94b7b8d0a94d420cbbd252d266ad061.6a5a735cbfbc5d355fd80dde8df36cec5f875980d6ea6fdf8ecb1c1b98808396) (round 3's recipient) · [Otieno](https://rota-gb7u.vercel.app/demo#a432ceccd616235f6f66ecff0aadafe3756aeffbed1787f45c6c7cdae689da8d.8c3e5f23a6d9b3ec5e054d2e242e8098c94b7b8d0a94d420cbbd252d266ad061.6a5a735cbfbc5d355fd80dde8df36cec5f875980d6ea6fdf8ecb1c1b98808396) · [Fatou](https://rota-gb7u.vercel.app/demo#b70054e74bc46b76a5513728685aeee042902d4cf11df41b023579edf2354244.8c3e5f23a6d9b3ec5e054d2e242e8098c94b7b8d0a94d420cbbd252d266ad061.6a5a735cbfbc5d355fd80dde8df36cec5f875980d6ea6fdf8ecb1c1b98808396) (owes round 3).
+
+A demo login replaces the member key saved in your browser for that site, so use a private window if you've joined a real circle on the same copy. The demo keys are public: never use them with real money.
 
 ## Try it locally (about 2 minutes)
 
@@ -111,7 +126,7 @@ From each team's own Devpost page, read on 18 Nov 2026. Their claims, not tested
 
 | | Who holds money between payments | How payments are recorded | Network in the demo | Mobile money payout |
 |---|---|---|---|---|
-| **Rota** | No one: each member pays the recipient directly | Receipts signed by each member, checked on every member's phone | Regtest locally; mainnet build, no real payment yet | M-Pesa via `<number>@bitcoin.co.ke`, not yet paid out for real |
+| **Rota** | No one: each member pays the recipient directly | Receipts signed by each member, checked on every member's phone | Regtest, locally and online; mainnet build, no real payment yet | M-Pesa via `<number>@bitcoin.co.ke`, not yet paid out for real |
 | [Natt](https://devpost.com/software/natt-lightning-tontines) | The server's Lightning wallet holds the pot until payout (stated in its threat model) | Nostr events signed with the group's key, chained | Simulated wallet that signs real BOLT11 invoices; LNbits for real sats | Not mentioned |
 | [Twese](https://devpost.com/software/twese) | No one: hold invoices lock each payment until all are in, then release or refund | Payment hash per contribution in the app's history | Sandbox sats from an NWC test faucet | Planned (MTN MoMo, Wave) |
 | [Ajo on Lightning](https://devpost.com/software/ajo-on-lightning) | The coordinator holds the pot between the last contribution and payout | Signed Nostr events with the preimage, rebuilt on a verify page | Test ledger and signet invoices | Not mentioned |
@@ -126,7 +141,7 @@ Twese's all-or-refund rounds use hold invoices, which nodes hold for only a few 
 - **Members who stop paying.** Nothing forces a payment and nothing is refunded. The round shows who paid, who is pending and who is late.
 - **The built-in wallet is a 5 MB download** (gzipped WebAssembly), fetched only when someone creates or unlocks it. NWC users never download it.
 - **No reminders yet.** Members see the round's state when they open the circle.
-- **The hosted copy uses a public relay** (`wss://nos.lol`), because Vercel can't keep a relay's websocket connections open. Everything Rota publishes is encrypted, but the relay sees each event's circle key, round number and time, accepts events up to 64 KB, and promises nothing about how long it keeps them. Rota's events are a few KB; track records are files and never go to the relay. Running your own relay is one `NEXT_PUBLIC_RELAY_URL` away.
+- **The hosted copies use public relays** (`wss://nos.lol` for mainnet, `wss://relay.primal.net` for the demo), because Vercel can't keep a relay's websocket connections open. Everything Rota publishes is encrypted, but the relay sees each event's circle key, round number and time. Neither promises how long it keeps events, and nos.lol refuses events over 64 KB. Rota's events are a few KB; track records are files and never go to the relay. Running your own relay is one `NEXT_PUBLIC_RELAY_URL` away.
 
 ## Metrics
 
