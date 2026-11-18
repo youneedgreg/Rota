@@ -23,7 +23,7 @@
   "dependencies": {
     "@noble/hashes": "2.4.0",
     "@rota/circles": "workspace:*",
-    "@rota/receipts": "workspace:*",
+    "lightning-receipts": "workspace:*",
     "nostr-tools": "2.25.4"
   }
 }

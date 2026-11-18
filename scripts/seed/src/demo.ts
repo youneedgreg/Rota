@@ -6,7 +6,7 @@
 // All keys are derived from public labels, so anyone can recreate them. That
 // is the point: the demo logins are printed for whoever runs the demo.
 import { addMonthsUtc, localToMsat, type Quote } from "@rota/circles";
-import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex } from "@rota/receipts/testing";
+import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex } from "lightning-receipts/testing";
 import {
   createCircleEvent,
   createJoinEvent,

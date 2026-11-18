@@ -1,4 +1,4 @@
-import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "@rota/receipts/testing";
+import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "lightning-receipts/testing";
 import { finalizeEvent, type Event } from "nostr-tools/pure";
 import { describe, expect, it } from "vitest";
 import { createReceiptEvent, newCircleSecret, newMemberSecret, publicKeyOf } from "./records";

@@ -1,5 +1,5 @@
 {
-  "name": "@rota/receipts",
+  "name": "lightning-receipts",
   "version": "0.0.0",
   "private": true,
   "description": "Check that a Lightning payment reached a specific Lightning address, using only the invoice, its preimage and the address's LNURL metadata.",

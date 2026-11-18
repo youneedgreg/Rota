@@ -7,7 +7,7 @@ import {
   metadataIdentifier,
   type AddressProof,
   type Invoice,
-} from "@rota/receipts";
+} from "lightning-receipts";
 import { normalizeAddress, type Currency } from "./circle";
 import { checkTandoRate, localToMsat, PriceError, type Quote } from "./prices";
 

@@ -22,9 +22,6 @@ importers:
       '@rota/circles':
         specifier: workspace:*
         version: link:../../packages/circles
-      '@rota/receipts':
-        specifier: workspace:*
-        version: link:../../packages/receipts
       '@rota/records':
         specifier: workspace:*
         version: link:../../packages/records
@@ -34,6 +31,9 @@ importers:
       '@sentry/browser':
         specifier: 11.10.0
         version: 11.10.0
+      lightning-receipts:
+        specifier: workspace:*
+        version: link:../../packages/receipts
       next:
         specifier: 16.4.6
         version: 16.4.6(@babel/core@7.29.13)(@types/node@24.19.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -74,7 +74,7 @@ importers:
 
   packages/circles:
     dependencies:
-      '@rota/receipts':
+      lightning-receipts:
         specifier: workspace:*
         version: link:../receipts
     devDependencies:
@@ -130,7 +130,7 @@ importers:
       '@rota/circles':
         specifier: workspace:*
         version: link:../circles
-      '@rota/receipts':
+      lightning-receipts:
         specifier: workspace:*
         version: link:../receipts
       nostr-tools:
@@ -189,12 +189,12 @@ importers:
       '@rota/circles':
         specifier: workspace:*
         version: link:../../packages/circles
-      '@rota/receipts':
-        specifier: workspace:*
-        version: link:../../packages/receipts
       '@rota/records':
         specifier: workspace:*
         version: link:../../packages/records
+      lightning-receipts:
+        specifier: workspace:*
+        version: link:../../packages/receipts
       tsx:
         specifier: 4.23.15
         version: 4.23.15

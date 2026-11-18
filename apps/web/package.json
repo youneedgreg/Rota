@@ -16,10 +16,10 @@
     "@getalby/sdk": "9.0.0",
     "@noble/hashes": "2.4.0",
     "@rota/circles": "workspace:*",
-    "@rota/receipts": "workspace:*",
     "@rota/records": "workspace:*",
     "@rota/wallet": "workspace:*",
     "@sentry/browser": "11.10.0",
+    "lightning-receipts": "workspace:*",
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0"
