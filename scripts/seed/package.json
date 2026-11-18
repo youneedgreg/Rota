@@ -22,8 +22,8 @@
   "dependencies": {
     "@noble/hashes": "2.4.0",
     "@rota/circles": "workspace:*",
-    "@rota/receipts": "workspace:*",
     "@rota/records": "workspace:*",
+    "lightning-receipts": "workspace:*",
     "tsx": "4.23.15"
   }
 }

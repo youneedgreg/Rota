@@ -15,7 +15,7 @@
 // member only states: the circle's name and contribution, the node each
 // recipient's invoices come from (used for the issuer check), and each round's
 // deadline. The reader is shown which is which.
-import { decodeInvoice, verifyReceipt, type CheckResult } from "@rota/receipts";
+import { decodeInvoice, verifyReceipt, type CheckResult } from "lightning-receipts";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { decrypt, getConversationKey } from "nostr-tools/nip44";
 import { finalizeEvent, getPublicKey, type Event } from "nostr-tools/pure";

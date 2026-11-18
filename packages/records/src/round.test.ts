@@ -1,4 +1,4 @@
-import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "@rota/receipts/testing";
+import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "lightning-receipts/testing";
 import type { Event } from "nostr-tools/pure";
 import { describe, expect, it } from "vitest";
 import { assembleCircle, createCircleEvent, createJoinEvent, type CircleView } from "./circle-events";

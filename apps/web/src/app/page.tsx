@@ -1,4 +1,4 @@
-import { RECEIPT_CHECKS } from "@rota/receipts";
+import { RECEIPT_CHECKS } from "lightning-receipts";
 import { T, TLink } from "@/lib/lang";
 import { MyCircles } from "./my-circles";
 

@@ -3,7 +3,7 @@
 // by code here, so the packages stay language-free. English keeps the
 // packages' own, more specific messages.
 import { CircleError, LnurlError, PriceError } from "@rota/circles";
-import { InvoiceError } from "@rota/receipts";
+import { InvoiceError } from "lightning-receipts";
 import { CircleEventError } from "@rota/records";
 import { NwcPolicyError, PaymentGuardError, VaultError } from "@rota/wallet";
 import { translate, UiError, type Lang } from "./messages";

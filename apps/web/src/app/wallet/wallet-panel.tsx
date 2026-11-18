@@ -1,7 +1,7 @@
 "use client";
 
 import type { BreezSdk } from "@breeztech/breez-sdk-spark/ssr";
-import { decodeInvoice } from "@rota/receipts";
+import { decodeInvoice } from "lightning-receipts";
 import { generateWords, MIN_PIN_LENGTH, normalizeWords } from "@rota/wallet";
 import { useEffect, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import {

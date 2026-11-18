@@ -1,4 +1,4 @@
-import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "@rota/receipts/testing";
+import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "lightning-receipts/testing";
 import { describe, expect, it, vi } from "vitest";
 import {
   LnurlError,

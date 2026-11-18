@@ -1,7 +1,7 @@
 // One Nostr event per payment: signed by the paying member, encrypted with
 // NIP-44 for the circle, checked on every member's device. Rota's server never
 // builds, signs or reads these; it only runs the relay that stores ciphertext.
-import { decodeInvoice, verifyReceipt, type CheckResult } from "@rota/receipts";
+import { decodeInvoice, verifyReceipt, type CheckResult } from "lightning-receipts";
 import { getConversationKey, decrypt, encrypt } from "nostr-tools/nip44";
 import { finalizeEvent, generateSecretKey, getPublicKey, verifyEvent, type Event } from "nostr-tools/pure";
 import { HEX_32, isEventShape, MAX_CONTENT_LENGTH, plainEvent, tagValue } from "./event";

@@ -1,4 +1,4 @@
-import { nodeKeyOf, testKey } from "@rota/receipts/testing";
+import { nodeKeyOf, testKey } from "lightning-receipts/testing";
 import type { Event } from "nostr-tools/pure";
 import { describe, expect, it } from "vitest";
 import {

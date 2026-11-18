@@ -1,6 +1,6 @@
 // Runs only against a local relay: ROTA_TEST_RELAY=ws://127.0.0.1:7777 pnpm --filter @rota/records test
 // (start it with `docker compose up relay`). Skipped in CI.
-import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "@rota/receipts/testing";
+import { lnurlMetadata, makeInvoice, nodeKeyOf, sha256Hex, testKey, testPreimage } from "lightning-receipts/testing";
 import { describe, expect, it } from "vitest";
 import { assembleCircle, createCircleEvent, createJoinEvent, createRosterEvent, decodeInvite, encodeInvite } from "./circle-events";
 import { createReceiptEvent, newCircleSecret, newMemberSecret, publicKeyOf, roundClaims, verifyReceiptEvent } from "./records";

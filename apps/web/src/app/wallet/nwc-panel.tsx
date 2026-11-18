@@ -1,7 +1,7 @@
 "use client";
 
 import type { NWCClient } from "@getalby/sdk/nwc";
-import { decodeInvoice } from "@rota/receipts";
+import { decodeInvoice } from "lightning-receipts";
 import { capSats, MIN_PIN_LENGTH, type ConnectionReport } from "@rota/wallet";
 import { useState, useSyncExternalStore, type FormEvent } from "react";
 import {
