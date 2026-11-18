@@ -80,7 +80,7 @@ export function LanguageSwitch() {
     if (title) document.title = t(title);
   }, [lang, pathname, t]);
   return (
-    <nav aria-label={t("lang.label")} className="mx-auto flex w-full max-w-xl justify-end gap-1 px-4 pt-3 text-sm">
+    <nav aria-label={t("lang.label")} className="flex gap-1 text-sm">
       {(
         [
           ["en", "English"],
@@ -92,7 +92,7 @@ export function LanguageSwitch() {
           type="button"
           lang={code}
           aria-pressed={lang === code}
-          className={`min-h-11 rounded-md px-3 ${lang === code ? "font-semibold underline" : "opacity-70"}`}
+          className={`min-h-11 rounded-md px-3 ${lang === code ? "bg-foreground/10 font-semibold" : "text-muted"}`}
           onClick={() => setLang(code)}
         >
           {name}

@@ -20,14 +20,15 @@ export function MyCircles() {
   if (!circles || circles.length === 0) return null;
   return (
     <section aria-labelledby="mine" className="space-y-2">
-      <h2 id="mine" className="font-medium">
+      <h2 id="mine" className="text-xl font-semibold">
         <T k="mine.title" />
       </h2>
       <ul className="space-y-2">
         {circles.map((c) => (
           <li key={c.invite}>
-            <Link className="inline-flex min-h-11 items-center underline" href={`/circle#${c.invite}`}>
+            <Link className="flex min-h-12 items-center justify-between rounded-2xl border border-line bg-surface px-4 font-medium shadow-sm" href={`/circle#${c.invite}`}>
               {c.name}
+              <span aria-hidden="true" className="text-accent">→</span>
             </Link>
           </li>
         ))}
