@@ -2,6 +2,16 @@
 
 Short records of choices that shape Rota, newest first. Each says what was decided, why, and what would change it.
 
+## 2026-11-18 · The hosted copy: Vercel and a public relay
+
+**The web app is hosted on Vercel's free plan** at https://rota-prod.vercel.app, built from `apps/web` on `main`, on mainnet. Rota has no backend, so the static pages and the browser code are the whole app. The `standalone` output the Docker image needs didn't get in the way of Vercel's build.
+
+**The hosted copy uses `wss://nos.lol` as its relay.** A Nostr relay needs long-lived websocket connections, which Vercel's functions don't offer, and free hosts that sleep or wipe their disk would lose receipts. nos.lol runs strfry, the same relay as the local setup. Checked 18 Nov with a throwaway key and junk encrypted content: all six of Rota's kinds (3570–3575) were accepted and came back on a new connection, looked up by circle tag as the app does. It refused a 66 KB event ("event too large"), so its limit is 64 KB; Rota's events are a few KB, and track records are files, not events. Its published limits allow 500 results per query.
+
+**What this costs:** the relay operator sees each event's circle key, round tag, author key and time, though not its contents. It can drop events, and it promises nothing about how long it keeps them. It's also open to writes, the same gap as the local relay (THREAT_MODEL.md, gap 3). The relay URL is baked in at build time (`NEXT_PUBLIC_RELAY_URL`), so changing it means a redeploy.
+
+**What would change it:** events going missing from nos.lol, or a host with persistent storage for our own strfry. Switching is one variable and a redeploy, but circles already on nos.lol stay there unless their events are copied across.
+
 ## 2026-11-18 · The receipt checker on npm
 
 **Name: `lightning-receipts`, unscoped,** because it's useful to any Lightning app, not only Rota, and the name says what it does. It was free on npm on 18 Nov. The workspace uses the same name, so Rota's code imports it the way anyone else would.

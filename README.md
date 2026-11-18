@@ -4,7 +4,7 @@ A tontine (or chama) where nobody holds the pot. Each round, every member pays t
 
 Built for the [Dakar Bitcoin Hack 2026](https://dakar-bitcoin-hack-2026.devpost.com/). MIT licensed.
 
-> **Status, 18 Nov 2026:** the whole flow runs locally on regtest with a seeded demo circle: create a circle, join, pay, verify, settle, export a track record. Rota is built for mainnet with small amounts, but **no real mainnet payment has been made through it yet**, and the hosted demo isn't online yet. Both will be added here.
+> **Status, 18 Nov 2026:** the whole flow runs locally on regtest with a seeded demo circle: create a circle, join, pay, verify, settle, export a track record. Rota is built for mainnet with small amounts, but **no real mainnet payment has been made through it yet**. The hosted copy is online at **https://rota-prod.vercel.app** (mainnet, relay `wss://nos.lol`), with no demo circle on it yet. Real rounds and the judge path will be added here.
 
 <p>
   <img src="docs/screenshots/round.jpg" alt="Round 3 of the demo circle: two of four members paid, Baraka (you) still pending" width="200">
@@ -126,6 +126,7 @@ Twese's all-or-refund rounds use hold invoices, which nodes hold for only a few 
 - **Members who stop paying.** Nothing forces a payment and nothing is refunded. The round shows who paid, who is pending and who is late.
 - **The built-in wallet is a 5 MB download** (gzipped WebAssembly), fetched only when someone creates or unlocks it. NWC users never download it.
 - **No reminders yet.** Members see the round's state when they open the circle.
+- **The hosted copy uses a public relay** (`wss://nos.lol`), because Vercel can't keep a relay's websocket connections open. Everything Rota publishes is encrypted, but the relay sees each event's circle key, round number and time, accepts events up to 64 KB, and promises nothing about how long it keeps them. Rota's events are a few KB; track records are files and never go to the relay. Running your own relay is one `NEXT_PUBLIC_RELAY_URL` away.
 
 ## Metrics
 
