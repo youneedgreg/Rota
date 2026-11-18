@@ -1,0 +1,29 @@
+{
+  "name": "@rota/seed",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Seeds the local demo: a fictional 5-member circle in round 3, with rounds 1 and 2 paid and proven. Regtest only; no money moves.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/node": "^24",
+    "eslint": "^9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "@rota/circles": "workspace:*",
+    "@rota/receipts": "workspace:*",
+    "@rota/records": "workspace:*",
+    "tsx": "4.23.15"
+  }
+}

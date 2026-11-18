@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - scripts/*
 
 # Native builds pnpm may skip: sharp ships prebuilt binaries; unrs-resolver is lint-only;
 # better-sqlite3 is the Breez SDK's Node.js storage (the browser build uses IndexedDB).

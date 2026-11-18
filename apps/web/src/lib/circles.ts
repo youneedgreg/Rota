@@ -41,6 +41,18 @@ export function memberSecret(): Uint8Array {
   return secret;
 }
 
+/** The member key this browser already has, if any (hex). Doesn't create one. */
+export function savedMemberSecret(): string | null {
+  const saved = localStorage.getItem(MEMBER_KEY);
+  return saved && /^[0-9a-f]{64}$/.test(saved) ? saved : null;
+}
+
+/** Replaces this browser's member key. Only the local demo's login does this. */
+export function replaceMemberSecret(secret: string): void {
+  if (!/^[0-9a-f]{64}$/.test(secret)) throw new RangeError("not a member key");
+  localStorage.setItem(MEMBER_KEY, secret);
+}
+
 export function memberPubkey(): string {
   return publicKeyOf(memberSecret());
 }
