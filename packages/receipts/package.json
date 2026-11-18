@@ -1,15 +1,56 @@
 {
   "name": "lightning-receipts",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "Check that a Lightning payment reached a specific Lightning address, using only the invoice, its preimage and the address's LNURL metadata.",
+  "keywords": [
+    "lightning",
+    "bitcoin",
+    "bolt11",
+    "lnurl",
+    "lud-16",
+    "lightning-address",
+    "receipt",
+    "proof-of-payment",
+    "preimage"
+  ],
   "license": "MIT",
+  "author": "Gregory Temwa Odete",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youneedgreg/Rota.git",
+    "directory": "packages/receipts"
+  },
+  "homepage": "https://github.com/youneedgreg/Rota/tree/main/packages/receipts#readme",
+  "bugs": {
+    "url": "https://github.com/youneedgreg/Rota/issues"
+  },
   "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./testing": "./src/test-invoice.ts"
   },
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "types": "./dist/index.d.ts"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json && node add-js-extensions.mjs",
+    "prepack": "pnpm run build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run"
