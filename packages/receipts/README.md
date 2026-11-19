@@ -4,8 +4,17 @@ Check that a Lightning payment reached a specific Lightning address, using only 
 
 It was built for [Rota](https://github.com/youneedgreg/Rota), a savings circle where members pay each other directly, so anyone in the group can check a payment without asking the person who was paid. It works for any app that needs a receipt someone else can check.
 
+It isn't on npm yet. To use it in another project, build and pack it from this repo, then install the packed file:
+
 ```bash
-npm install lightning-receipts
+git clone https://github.com/youneedgreg/Rota.git && cd Rota
+pnpm install
+pnpm --filter lightning-receipts build
+cd packages/receipts && pnpm pack
+```
+
+```bash
+npm install /path/to/Rota/packages/receipts/lightning-receipts-0.1.0.tgz
 ```
 
 ESM only. Runs in browsers and in Node 20.19 or later. Its only dependencies are `@noble/curves`, `@noble/hashes` and `@scure/base`.
