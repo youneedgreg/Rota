@@ -180,7 +180,7 @@ pnpm build
 | Folder | What it is |
 |---|---|
 | `apps/web` | The Next.js PWA (English and French) |
-| `packages/receipts` | The receipt checker, `lightning-receipts` on npm: proves a Lightning payment reached a specific address ([its README](packages/receipts/README.md)) |
+| `packages/receipts` | The receipt checker, the `lightning-receipts` package (not on npm yet): proves a Lightning payment reached a specific address ([its README](packages/receipts/README.md)) |
 | `packages/circles` | The circle model, rounds and status, prices and LNURL-pay checks |
 | `packages/wallet` | The built-in wallet's sealed vault, the payment guard and the NWC connection checks |
 | `packages/records` | The circle on Nostr: events, relay access, rounds, settlements and track records |
